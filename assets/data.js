@@ -37,7 +37,7 @@ const topics = [
   },
   {
     title: "Simulasi Gaya Listrik dan Medan Listrik",
-    category: "lab-maya",
+    category: "mekanika",
     kelas: "XII",
     file: "materi/AanS_lab_maya_listrik_statis.html",
     desc: "Yuk lakukan simulasi untuk memahami gaya listrik dan medan listrik"
