@@ -30,7 +30,7 @@ const topics = [
   },
   {
     title: "Game Misteri Dunia Kuantum",
-    category: "Fisika Modern",
+    category: "fisika-modern",
     kelas: "XII",
     file: "materi/AanS_Game_misteri-dunia-kuantum.html",
     desc: "Yuk berpetualang di dunia Kuantum dengan beragam tantangan"
@@ -60,5 +60,5 @@ const categories = [
   { key: "listrik-magnet", label: "Listrik & Magnet" },
   { key: "termodinamika", label: "Termodinamika" },
   { key: "fisika-modern", label: "Fisika Modern" },
-  { key: "Lab-Maya", label: "Lab Maya" },
+  { key: "lab-maya", label: "Lab Maya" },
 ];
