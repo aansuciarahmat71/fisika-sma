@@ -29,6 +29,14 @@ const topics = [
     desc: "— silakan buka"
   },
   {
+    title: "Game Misteri Dunia Kuantum",
+    category: "Fisika Modern",
+    kelas: "XII",
+    file: "materi/AanS_Game_misteri-dunia-kuantum.html",
+    desc: "Yuk berpetualang di dunia Kuantum dengan beragam tantangan"
+  },
+
+  {
     title: "Pengukuran",
     category: "mekanika",
     kelas: "X",
