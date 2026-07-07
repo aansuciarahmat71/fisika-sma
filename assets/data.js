@@ -11,7 +11,7 @@
  *
  * Kategori yang tersedia (harus salah satu dari ini, huruf kecil semua):
  *   "mekanika", "gelombang", "listrik-magnet", "termodinamika", "fisika-modern",
-  * Field:
+ * Field:
  *   title    -> judul materi, tampil di kartu
  *   category -> salah satu kategori di atas
  *   kelas     -> "X", "XI", atau "XII" (boleh diisi bebas juga, mis. "X-XII")
