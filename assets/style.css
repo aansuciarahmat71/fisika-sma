@@ -309,6 +309,7 @@ code {
 .tag-listrik-magnet { background: rgba(242,200,91,0.18); color: var(--chalk-yellow); }
 .tag-termodinamika { background: rgba(217,163,199,0.18); color: var(--chalk-pink); }
 .tag-fisika-modern { background: rgba(207,212,201,0.18); color: var(--chalk-dim); }
+.tag-lab-maya { background: rgba(207,212,201,0.18); color: var(--chalk-dim); }
 
 .kelas-badge {
   font-family: var(--font-mono);
