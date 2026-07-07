@@ -1,0 +1,3082 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LKPD — Besaran Pokok, Turunan, dan Satuan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2B39;
+    --ink-soft:#3E5266;
+    --paper:#F3F4EE;
+    --paper-line:#DADCCB;
+    --panel:#FFFFFF;
+    --brass:#A8763E;
+    --brass-dark:#7E5A2C;
+    --brass-light:#F1E4D2;
+    --blue:#2E5266;
+    --correct:#3F7A4C;
+    --correct-bg:#E7F1E7;
+    --wrong:#B33F3F;
+    --wrong-bg:#F6E7E7;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 28px,
+      var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px; margin:0 auto; padding:32px 20px 100px;}
+
+  /* ---------- QUIZ START CARD (reuses login-card look) ---------- */
+  .login-card{
+    background:var(--paper); max-width:520px; width:100%;
+    border-top:5px solid var(--brass); padding:28px 30px; margin:4px 0 26px;
+  }
+  .login-card .eyebrow{color:var(--brass-dark);}
+  .login-card h1{font-size:20px; margin:0 0 6px;}
+  .login-card p.subtitle{margin-bottom:22px;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:6px; text-transform:uppercase;
+  }
+  .field input{
+    width:100%; padding:11px 12px; font-size:15px; font-family:'IBM Plex Sans',sans-serif;
+    border:1.5px solid var(--paper-line); background:#fff; color:var(--ink);
+  }
+  .field input:focus{border-color:var(--brass); outline:none;}
+  .login-error{color:var(--wrong); font-size:13px; margin:-6px 0 14px; display:none; font-family:'IBM Plex Mono',monospace;}
+  .student-badge{
+    display:inline-flex; gap:14px; align-items:center; font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px; color:var(--ink-soft); background:#fff; border:1px solid var(--paper-line);
+    padding:8px 14px; margin-top:4px;
+  }
+  .student-badge b{color:var(--ink);}
+
+
+  /* ---------- HEADER / RULER SIGNATURE ---------- */
+  header{margin-bottom:20px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass-dark);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:clamp(24px,4vw,36px);
+    font-weight:700;
+    margin:0 0 6px;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--ink-soft); font-size:15px; margin:0 0 18px;}
+
+  .ruler{position:relative; height:34px; border-bottom:2px solid var(--ink); margin-bottom:6px;}
+  .ruler .tick-major{position:absolute; bottom:0; width:2px; height:22px; background:var(--ink);}
+  .ruler .tick-label{position:absolute; bottom:22px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-soft); transform:translateX(-50%);}
+
+  /* ---------- NAV ---------- */
+  nav{display:flex; gap:2px; margin:18px 0 26px; border:2px solid var(--ink); background:var(--ink);}
+  nav button{
+    flex:1; font-family:'IBM Plex Mono', monospace; font-size:13.5px; font-weight:600;
+    letter-spacing:.03em; padding:14px 10px; background:var(--paper); color:var(--ink-soft);
+    border:none; cursor:pointer; position:relative; transition:background .15s ease, color .15s ease;
+  }
+  nav button .num{color:var(--brass); margin-right:6px;}
+  nav button.active{background:var(--panel); color:var(--ink);}
+  nav button.active::after{content:""; position:absolute; left:0; right:0; bottom:-2px; height:3px; background:var(--brass);}
+  nav button:hover:not(.active){background:#e9eadf;}
+  nav button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:3px solid var(--brass); outline-offset:2px;}
+
+  section.panel{background:var(--panel); border:1px solid var(--paper-line); border-top:4px solid var(--brass); padding:30px 30px 34px; display:none;}
+  section.panel.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  h2{font-family:'IBM Plex Mono', monospace; font-size:21px; margin:0 0 4px; color:var(--ink);}
+  h2 .tag{display:inline-block; font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--brass-dark); background:var(--brass-light); padding:2px 8px; border-radius:2px; vertical-align:middle; margin-right:10px;}
+  h3{font-family:'IBM Plex Mono', monospace; font-size:15.5px; color:var(--blue); margin:26px 0 10px; border-bottom:1px solid var(--paper-line); padding-bottom:6px;}
+  p{margin:0 0 12px; font-size:15px; color:#2A3A48;}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0 6px; font-size:14px;}
+  caption{caption-side:top; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); margin-bottom:6px;}
+  th,td{border:1px solid var(--paper-line); padding:9px 12px; text-align:left;}
+  th{background:var(--ink); color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.04em; font-weight:600;}
+  tr:nth-child(even) td{background:#FAFAF4;}
+  td.sym{font-family:'IBM Plex Mono',monospace; color:var(--brass-dark); font-weight:600;}
+
+  .note{background:#EFF4F1; border-left:3px solid var(--blue); padding:12px 16px; font-size:14px; color:var(--ink-soft); margin:16px 0;}
+
+  .demo{margin:18px 0 8px; border:1px solid var(--paper-line); background:#FAFAF6; padding:20px;}
+  .demo-label{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); margin-bottom:10px;}
+  .demo-ruler{position:relative; height:70px; margin:10px 0 8px; cursor:crosshair; background:#fff; border:1px solid var(--ink);}
+  .demo-ruler .grad{position:absolute; bottom:0; width:1px; background:var(--ink);}
+  .demo-ruler .grad.major{height:32px; opacity:.9;}
+  .demo-ruler .grad.minor{height:16px; opacity:.4;}
+  .demo-ruler .grad-label{position:absolute; top:4px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-soft); transform:translateX(-50%);}
+  .demo-pointer{position:absolute; top:0; bottom:0; width:2px; background:var(--brass); box-shadow:0 0 0 1px rgba(168,118,62,.3);}
+  .demo-readout{font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--brass-dark); font-weight:600;}
+
+  /* ---------- MATERI-BOTTOM: LATIHAN / KUIS LINKS ---------- */
+  .materi-next{margin-top:34px; padding-top:26px; border-top:2px solid var(--ink);}
+  .materi-next .label{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:14px;}
+  .materi-next-row{display:flex; gap:14px; flex-wrap:wrap;}
+  .materi-next-card{
+    flex:1 1 220px; display:flex; flex-direction:column; gap:6px; text-align:left;
+    background:#FAFAF6; border:1.5px solid var(--paper-line); border-left:4px solid var(--brass);
+    padding:16px 18px; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; transition:border-color .15s, background .15s;
+  }
+  .materi-next-card:hover{border-color:var(--brass); background:var(--brass-light);}
+  .materi-next-card .title{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:14.5px; color:var(--ink);}
+  .materi-next-card .desc{font-size:13px; color:var(--ink-soft);}
+
+  .btn{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px; letter-spacing:.03em; background:var(--ink); color:var(--paper); border:none; padding:12px 24px; cursor:pointer; transition:background .15s;}
+  .btn:hover{background:var(--brass-dark);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.ghost{background:transparent; color:var(--ink); border:1.5px solid var(--ink);}
+  .btn.ghost:hover{background:var(--ink); color:var(--paper);}
+  .btn.big{padding:15px 30px; font-size:14px;}
+
+  /* ---------- LATIHAN: QUESTION BLOCKS ---------- */
+  .quiz-intro{background:#FAFAF6; border:1px solid var(--paper-line); padding:16px 18px; margin-bottom:24px; font-size:14px; color:var(--ink-soft);}
+  .qblock{border:1px solid var(--paper-line); margin-bottom:20px; overflow:hidden;}
+  .qhead{display:flex; align-items:center; gap:12px; background:#FAFAF6; padding:12px 16px; border-bottom:1px solid var(--paper-line);}
+  .qnum{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--brass-dark); font-size:14px; flex:none;}
+  .qtype{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#fff; background:var(--blue); padding:3px 8px;}
+  .qbody{padding:18px 18px 20px;}
+  .qprompt{font-size:15px; font-weight:600; margin-bottom:14px; color:var(--ink);}
+
+  .options{display:flex; flex-direction:column; gap:9px;}
+  .option{display:flex; align-items:center; gap:10px; border:1.5px solid var(--paper-line); padding:11px 14px; cursor:pointer; font-size:14.5px; background:#fff; transition:border-color .15s, background .15s;}
+  .option:hover{border-color:var(--brass);}
+  .option.selected{border-color:var(--brass); background:#FBF3E8;}
+  .option input{accent-color:var(--brass); flex:none;}
+  .option.correct{border-color:var(--correct); background:var(--correct-bg); color:var(--correct);}
+  .option.wrong{border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong);}
+
+  .tf-row{display:flex; gap:10px;}
+  .tf-btn{flex:1; padding:13px; text-align:center; border:1.5px solid var(--paper-line); cursor:pointer; font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13.5px; background:#fff; transition:.15s;}
+  .tf-btn:hover{border-color:var(--brass);}
+  .tf-btn.selected{border-color:var(--brass); background:#FBF3E8;}
+  .tf-btn.correct{border-color:var(--correct); background:var(--correct-bg); color:var(--correct);}
+  .tf-btn.wrong{border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong);}
+
+  .short-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .short-row label{flex:0 0 200px; font-size:13.5px; color:var(--ink-soft);}
+  .short-row input{flex:1; padding:9px 11px; border:1.5px solid var(--paper-line); font-size:14px; font-family:'IBM Plex Sans',sans-serif;}
+  .short-row input.correct{border-color:var(--correct); background:var(--correct-bg);}
+  .short-row input.wrong{border-color:var(--wrong); background:var(--wrong-bg);}
+
+  .match-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:center; margin-bottom:10px;}
+  .match-left{background:#FAFAF6; border:1px solid var(--paper-line); padding:10px 12px; font-size:14px;}
+  .match-row select{padding:9px 10px; border:1.5px solid var(--paper-line); font-size:14px; font-family:'IBM Plex Sans',sans-serif; background:#fff;}
+  .match-row select.correct{border-color:var(--correct); background:var(--correct-bg);}
+  .match-row select.wrong{border-color:var(--wrong); background:var(--wrong-bg);}
+
+  .dd-sentence{font-size:15px; margin-bottom:16px; line-height:2.1;}
+  .dd-blank{
+    display:inline-flex; align-items:center; justify-content:center; min-width:110px; min-height:30px;
+    border-bottom:2px dashed var(--brass); padding:2px 10px; margin:0 3px; font-family:'IBM Plex Mono',monospace;
+    font-weight:600; color:var(--brass-dark); cursor:pointer; vertical-align:middle;
+  }
+  .dd-blank.filled{border-style:solid; background:var(--brass-light);}
+  .dd-blank.correct{border-color:var(--correct); background:var(--correct-bg); color:var(--correct);}
+  .dd-blank.wrong{border-color:var(--wrong); background:var(--wrong-bg); color:var(--wrong);}
+  .dd-bank{display:flex; flex-wrap:wrap; gap:8px;}
+  .dd-word{
+    font-family:'IBM Plex Mono',monospace; font-size:13.5px; font-weight:600; padding:8px 14px;
+    background:var(--ink); color:var(--paper); cursor:grab; user-select:none; transition:opacity .15s;
+  }
+  .dd-word:hover{background:var(--brass-dark);}
+  .dd-word.used{opacity:.25; cursor:default; pointer-events:none;}
+  .dd-word.picked{outline:3px solid var(--brass); outline-offset:2px;}
+  .dd-hint{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:8px;}
+
+  .checkbox-hint{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px;}
+
+  /* ---------- LATIHAN: SATU-SOAL LAYOUT ---------- */
+  .quiz-layout{display:grid; grid-template-columns:1fr 250px; gap:24px; align-items:start;}
+  .quiz-main{min-width:0;}
+
+  .qcard-topbar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .qcard-progress{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);}
+
+  .doubt-toggle{
+    display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    font-weight:600; letter-spacing:.02em; padding:9px 14px; border:1.5px solid var(--paper-line);
+    background:#fff; color:var(--ink-soft); cursor:pointer; transition:.15s;
+  }
+  .doubt-toggle:hover{border-color:var(--brass);}
+  .doubt-toggle.active{border-color:var(--brass); background:var(--brass-light); color:var(--brass-dark);}
+
+  .qnav-buttons{display:flex; justify-content:space-between; margin-top:22px; gap:10px;}
+  .qnav-buttons .btn{flex:none;}
+
+  .quiz-sidebar{position:sticky; top:16px; display:flex; flex-direction:column; gap:16px;}
+
+  .timer-box{border:1.5px solid var(--ink); background:var(--ink); color:var(--paper); padding:14px 16px; text-align:center; transition:background .2s, border-color .2s;}
+  .timer-box .timer-label{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--brass-light); margin-bottom:4px;}
+  .timer-box .timer-value{font-family:'IBM Plex Mono',monospace; font-size:28px; font-weight:700; letter-spacing:.02em;}
+  .timer-box.warning{background:var(--wrong); border-color:var(--wrong);}
+  .timer-box.warning .timer-label{color:#fff;}
+  .timer-box.stopped{background:var(--ink-soft); border-color:var(--ink-soft);}
+
+  .qn-panel{border:1px solid var(--paper-line); background:#FAFAF6; padding:14px;}
+  .qn-panel-title{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px;}
+  .qn-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:6px;}
+  .qn-btn{
+    position:relative; aspect-ratio:1; border:1.5px solid var(--paper-line); background:#fff;
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12.5px; color:var(--ink-soft);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.15s;
+  }
+  .qn-btn:hover{border-color:var(--brass);}
+  .qn-btn.answered{border-color:var(--correct); background:var(--correct-bg); color:var(--correct);}
+  .qn-btn.doubt{border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass);}
+  .qn-btn.current{border-color:var(--ink); border-width:2px; color:var(--ink); background:#fff;}
+  .qn-btn.doubt::after{
+    content:"!"; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
+    background:var(--brass); color:#fff; font-size:9.5px; font-weight:700; line-height:14px; text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  .qn-legend{margin-top:12px; display:flex; flex-direction:column; gap:7px; font-size:11px; color:var(--ink-soft);}
+  .qn-legend .row{display:flex; align-items:center; gap:8px;}
+  .qn-legend .dot{display:inline-block; width:12px; height:12px; flex:none; border:1.5px solid var(--paper-line); background:#fff;}
+  .qn-legend .dot.answered{border-color:var(--correct); background:var(--correct-bg);}
+  .qn-legend .dot.doubt{border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass);}
+  .qn-legend .dot.current{border-color:var(--ink); border-width:2px;}
+
+  @media (max-width:800px){
+    .quiz-layout{grid-template-columns:1fr;}
+    .quiz-sidebar{position:static; order:-1;}
+    .qn-grid{grid-template-columns:repeat(10,1fr);}
+  }
+  @media (max-width:480px){
+    .qn-grid{grid-template-columns:repeat(5,1fr);}
+  }
+
+  #resultBox, #resultBoxK{display:none; margin-top:30px; border-top:3px solid var(--brass); padding-top:24px;}
+  .result-score{text-align:center; padding:10px 0 22px;}
+  .result-score .score{font-family:'IBM Plex Mono',monospace; font-size:48px; font-weight:700; color:var(--brass-dark);}
+  .result-score .score span{font-size:20px; color:var(--ink-soft);}
+  .result-score p{color:var(--ink-soft);}
+  .review-item{border:1px solid var(--paper-line); padding:12px 14px; margin-bottom:10px; font-size:13.5px;}
+  .review-item .rtitle{font-family:'IBM Plex Mono',monospace; font-weight:700; margin-bottom:4px;}
+  .review-item.ok{border-left:4px solid var(--correct);}
+  .review-item.partial{border-left:4px solid var(--brass);}
+  .review-item.bad{border-left:4px solid var(--wrong);}
+  .download-row{text-align:center; margin-top:22px;}
+  .download-row p{font-size:12.5px; color:var(--ink-soft);}
+
+  /* ---------- INFO PENGEMBANG ---------- */
+  .dev-card{display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; border:1px solid var(--paper-line); padding:22px; background:#FAFAF6;}
+  .dev-avatar{width:76px; height:76px; flex:none; border-radius:50%; overflow:hidden; background:var(--ink); color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; display:flex; align-items:center; justify-content:center;}
+  .dev-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .dev-meta{flex:1; min-width:200px;}
+  .dev-meta dl{display:grid; grid-template-columns:120px 1fr; gap:6px 12px; margin:0; font-size:14px;}
+  .dev-meta dt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); align-self:center;}
+  .dev-meta dd{margin:0; font-weight:500;}
+  .dev-edit-note{margin-top:18px; font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--paper-line); padding-top:12px;}
+
+  footer{text-align:center; margin-top:34px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); letter-spacing:.05em;}
+
+  /* ---------- KONVERSI SATUAN: TANGGA & KONVERTER ---------- */
+  .stair-row{display:flex; align-items:center; gap:2px; overflow-x:auto; padding:16px 4px; -webkit-overflow-scrolling:touch;}
+  .stair-box{
+    background:var(--ink); color:var(--paper); padding:11px 15px; font-family:'IBM Plex Mono',monospace;
+    font-weight:700; font-size:13px; text-align:center; min-width:50px; flex:none;
+  }
+  .stair-box.base{background:var(--brass-dark);}
+  .stair-arrow{display:flex; flex-direction:column; align-items:center; justify-content:center; flex:none; min-width:44px; font-family:'IBM Plex Mono',monospace;}
+  .stair-arrow .arrow-line{font-size:16px; color:var(--brass); line-height:1;}
+  .stair-arrow .arrow-label{font-size:9.5px; color:var(--ink-soft); margin-top:2px;}
+  .stair-caption{font-size:12px; color:var(--ink-soft); margin:2px 0 4px;}
+  .stair-legend{display:flex; gap:18px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-soft); margin-top:6px;}
+  .stair-legend span.arrow-line{color:var(--brass); font-weight:700; margin-right:4px;}
+
+  .converter{margin:18px 0 8px; border:1px solid var(--paper-line); background:#FAFAF6; padding:20px;}
+  .converter-row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:14px;}
+  .converter-field{display:flex; flex-direction:column; gap:6px; flex:1; min-width:130px;}
+  .converter-field label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft);}
+  .converter-field input, .converter-field select{
+    padding:10px 11px; font-size:14.5px; font-family:'IBM Plex Sans',sans-serif;
+    border:1.5px solid var(--paper-line); background:#fff; color:var(--ink);
+  }
+  .converter-field input:focus, .converter-field select:focus{border-color:var(--brass); outline:none;}
+  .converter-swap{flex:none; align-self:flex-end;}
+  .converter-swap button{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:16px; background:var(--ink); color:var(--paper);
+    border:none; padding:10px 13px; cursor:pointer;
+  }
+  .converter-swap button:hover{background:var(--brass-dark);}
+  .converter-result{
+    font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:700; color:var(--brass-dark);
+    background:#fff; border:1.5px solid var(--paper-line); padding:14px 16px;
+  }
+  .converter-result .small{font-size:11.5px; font-weight:500; color:var(--ink-soft); display:block; margin-top:4px;}
+
+  .step-example{border-left:3px solid var(--brass); background:#FAFAF6; padding:14px 18px; margin:14px 0;}
+  .step-example .step-q{font-weight:600; margin-bottom:8px;}
+  .step-example ol{margin:0; padding-left:20px; font-size:14px; color:#2A3A48;}
+  .step-example li{margin-bottom:4px;}
+
+  @media (max-width:640px){
+    .wrap{padding:22px 14px 60px;}
+    nav{flex-wrap:wrap;}
+    nav button{flex:1 1 100%;}
+    section.panel{padding:22px 18px 26px;}
+    .dev-meta dl{grid-template-columns:100px 1fr;}
+    .match-row{grid-template-columns:1fr;}
+    .short-row{flex-direction:column; align-items:stretch;}
+    .short-row label{flex:none;}
+    .qnav-buttons{flex-direction:column-reverse;}
+    .qnav-buttons .btn{width:100%;}
+    .converter-row{flex-direction:column; align-items:stretch;}
+    .converter-swap{align-self:center;}
+  }
+  @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important;}}
+</style>
+</head>
+<body>
+
+<!-- ================= APP ================= -->
+<div id="app">
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Lembar Kerja Peserta Didik · Fisika</div>
+    <h1>Besaran Pokok, Besaran Turunan &amp; Satuan</h1>
+    <p class="subtitle">Mengukur dunia di sekitar kita — dari panjang meja hingga kecepatan sepeda.</p>
+    <div class="student-badge">📘 <span>Nama: <b id="badgeName">-</b></span><span>Kelas: <b id="badgeClass">-</b></span></div>
+    <div class="ruler" id="headerRuler" style="margin-top:16px;"></div>
+  </header>
+
+  <nav>
+    <button class="tab-btn active" data-tab="materi"><span class="num">01</span>Besaran dan Satuan</button>
+    <button class="tab-btn" data-tab="konversi"><span class="num">02</span>Konversi Satuan</button>
+    <button class="tab-btn" data-tab="notasi"><span class="num">03</span>Notasi Ilmiah</button>
+    <button class="tab-btn" data-tab="angkapenting"><span class="num">04</span>Angka Penting</button>
+    <button class="tab-btn" data-tab="jangkasorong"><span class="num">05</span>Jangka Sorong</button>
+    <button class="tab-btn" data-tab="mikrometer"><span class="num">06</span>Mikrometer Sekrup</button>
+    <button class="tab-btn" data-tab="evaluasi"><span class="num">07</span>Evaluasi</button>
+    <button class="tab-btn" data-tab="dev"><span class="num">08</span>Info Pengembang</button>
+  </nav>
+
+  <!-- ================= MATERI ================= -->
+  <section class="panel active" id="panel-materi">
+    <h2><span class="tag">Materi</span>Mengenal Besaran dan Satuan</h2>
+    <p>Setiap kali kita mengukur sesuatu — panjang pensil, massa buku, atau waktu berlari — kita sedang menentukan <strong>besaran</strong>. Besaran adalah segala sesuatu yang dapat diukur dan dinyatakan dengan angka serta satuan. Angka hasil pengukuran disebut <strong>nilai</strong>, dan pembanding yang digunakan saat mengukur disebut <strong>satuan</strong>.</p>
+    <p>Contoh: "Panjang meja itu 120 cm." Di sini <em>panjang</em> adalah besaran, <em>120</em> adalah nilai, dan <em>cm</em> adalah satuan.</p>
+
+    <h3>1. Besaran Pokok</h3>
+    <p>Besaran pokok adalah besaran yang satuannya telah ditetapkan lebih dahulu dan tidak diturunkan dari besaran lain. Terdapat 7 besaran pokok dalam Sistem Internasional (SI):</p>
+    <table>
+      <caption>Tabel 1 — Tujuh Besaran Pokok SI</caption>
+      <thead><tr><th>No</th><th>Besaran</th><th>Satuan SI</th><th>Simbol</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Panjang</td><td>meter</td><td class="sym">m</td></tr>
+        <tr><td>2</td><td>Massa</td><td>kilogram</td><td class="sym">kg</td></tr>
+        <tr><td>3</td><td>Waktu</td><td>sekon (detik)</td><td class="sym">s</td></tr>
+        <tr><td>4</td><td>Suhu</td><td>kelvin</td><td class="sym">K</td></tr>
+        <tr><td>5</td><td>Kuat arus listrik</td><td>ampere</td><td class="sym">A</td></tr>
+        <tr><td>6</td><td>Intensitas cahaya</td><td>kandela</td><td class="sym">cd</td></tr>
+        <tr><td>7</td><td>Jumlah zat</td><td>mol</td><td class="sym">mol</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Besaran Turunan</h3>
+    <p>Besaran turunan adalah besaran yang satuannya diturunkan (dibentuk) dari satu atau lebih besaran pokok.</p>
+    <table>
+      <caption>Tabel 2 — Contoh Besaran Turunan</caption>
+      <thead><tr><th>Besaran Turunan</th><th>Diturunkan dari</th><th>Satuan</th><th>Simbol</th></tr></thead>
+      <tbody>
+        <tr><td>Luas</td><td>panjang × panjang</td><td>meter persegi</td><td class="sym">m²</td></tr>
+        <tr><td>Volume</td><td>panjang × panjang × panjang</td><td>meter kubik</td><td class="sym">m³</td></tr>
+        <tr><td>Kecepatan</td><td>panjang ÷ waktu</td><td>meter per sekon</td><td class="sym">m/s</td></tr>
+        <tr><td>Massa jenis</td><td>massa ÷ volume</td><td>kilogram per meter kubik</td><td class="sym">kg/m³</td></tr>
+        <tr><td>Gaya</td><td>massa × percepatan</td><td>newton</td><td class="sym">N</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">💡 Cara membedakan: jika satuannya tunggal dan sudah tetap dari SI (m, kg, s, K, A, cd, mol) → besaran pokok. Jika satuannya gabungan (misal m/s atau kg/m³) atau punya nama khusus hasil turunan (newton, joule) → besaran turunan.</div>
+
+    <h3>3. Satuan Baku dan Tidak Baku</h3>
+    <p>Satuan baku adalah satuan yang telah disepakati secara internasional sehingga hasil pengukuran akan sama di mana pun diukur, contohnya meter dan kilogram. Satuan tidak baku bergantung pada orang yang mengukur, contohnya jengkal, depa, atau langkah kaki — hasilnya bisa berbeda-beda antarorang.</p>
+
+    <h3>4. Alat Ukur</h3>
+    <table>
+      <caption>Tabel 3 — Alat Ukur dan Besaran yang Diukur</caption>
+      <thead><tr><th>Alat Ukur</th><th>Mengukur</th><th>Ketelitian</th></tr></thead>
+      <tbody>
+        <tr><td>Mistar</td><td>Panjang</td><td>1 mm</td></tr>
+        <tr><td>Jangka sorong</td><td>Panjang (benda kecil)</td><td>0,1 mm</td></tr>
+        <tr><td>Mikrometer sekrup</td><td>Panjang (sangat kecil)</td><td>0,01 mm</td></tr>
+        <tr><td>Neraca</td><td>Massa</td><td>bervariasi</td></tr>
+        <tr><td>Stopwatch</td><td>Waktu</td><td>0,01 s</td></tr>
+        <tr><td>Termometer</td><td>Suhu</td><td>bervariasi</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5. Coba Sendiri: Membaca Skala Mistar</h3>
+    <div class="demo">
+      <div class="demo-label">Geser kursor di atas mistar untuk melihat cara membaca skala pengukuran.</div>
+      <div class="demo-ruler" id="rulerDemo">
+        <div class="demo-pointer" id="rulerPointer" style="left:0%;"></div>
+      </div>
+      <div class="demo-readout" id="rulerReadout">Posisi: 0,0 cm</div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="konversi">
+          <span class="title">🔁 Konversi Satuan</span>
+          <span class="desc">Pelajari cara mengubah satu satuan ke satuan lain dan coba alat konversinya.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan">
+          <span class="title">📝 Latihan — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu tentang besaran, satuan, dan alat ukur.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KONVERSI SATUAN (MATERI 2) ================= -->
+  <section class="panel" id="panel-konversi">
+    <h2><span class="tag">Materi 2</span>Konversi Satuan (Lanjutan)</h2>
+    <p>Setelah mengenal besaran dan satuan SI, langkah berikutnya adalah bisa <strong>mengubah satu satuan ke satuan lain</strong> untuk besaran yang sama — misalnya dari kilometer ke sentimeter, atau dari jam ke detik. Kemampuan ini disebut <strong>konversi satuan</strong>, dan sangat penting supaya perhitungan fisika bisa dibandingkan dengan adil (dalam satuan yang sama).</p>
+
+    <h3>1. Tangga Konversi Satuan Panjang</h3>
+    <p>Satuan panjang dalam Sistem Internasional mengikuti kelipatan 10 dan bisa digambarkan sebagai "tangga". Setiap turun satu anak tangga (ke kanan), nilai dikalikan 10. Setiap naik satu anak tangga (ke kiri), nilai dibagi 10.</p>
+    <div class="stair-row">
+      <div class="stair-box">km</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">hm</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">dam</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box base">m</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">dm</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">cm</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">mm</div>
+    </div>
+    <div class="stair-legend">
+      <span><span class="arrow-line">→</span>bergerak ke kanan: kalikan 10 setiap langkah</span>
+      <span><span class="arrow-line">←</span>bergerak ke kiri: bagi 10 setiap langkah</span>
+    </div>
+    <div class="note">💡 Contoh: 1 km → m ada 3 langkah ke kanan, jadi 1 km = 1 × 10 × 10 × 10 = <strong>1.000 m</strong>. Sebaliknya, 1 m → km ada 3 langkah ke kiri, jadi 1 m = 1 ÷ 1.000 = <strong>0,001 km</strong>.</div>
+
+    <h3>2. Tangga Konversi Satuan Massa</h3>
+    <p>Satuan massa juga mengikuti pola tangga kelipatan 10 dengan kilogram (kg) sebagai satuan SI:</p>
+    <div class="stair-row">
+      <div class="stair-box base">kg</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">hg</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">dag</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">g</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">dg</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">cg</div>
+      <div class="stair-arrow"><span class="arrow-line">→</span><span class="arrow-label">×10</span></div>
+      <div class="stair-box">mg</div>
+    </div>
+    <table>
+      <caption>Tabel 4 — Satuan Massa Lain di Luar Tangga</caption>
+      <thead><tr><th>Satuan</th><th>Setara dengan</th></tr></thead>
+      <tbody>
+        <tr><td>1 ton</td><td>1.000 kg</td></tr>
+        <tr><td>1 kuintal</td><td>100 kg</td></tr>
+        <tr><td>1 ons</td><td>100 g (= 0,1 kg)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3. Konversi Satuan Waktu</h3>
+    <p>Berbeda dengan panjang dan massa, satuan waktu tidak mengikuti kelipatan 10, melainkan kelipatan 60 dan 24:</p>
+    <table>
+      <caption>Tabel 5 — Konversi Satuan Waktu</caption>
+      <thead><tr><th>Satuan</th><th>Setara dengan</th></tr></thead>
+      <tbody>
+        <tr><td>1 menit</td><td>60 sekon</td></tr>
+        <tr><td>1 jam</td><td>60 menit = 3.600 sekon</td></tr>
+        <tr><td>1 hari</td><td>24 jam = 86.400 sekon</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4. Konversi Satuan Luas dan Volume</h3>
+    <table>
+      <caption>Tabel 6 — Konversi Satuan Volume</caption>
+      <thead><tr><th>Satuan</th><th>Setara dengan</th></tr></thead>
+      <tbody>
+        <tr><td>1 liter</td><td>1 dm³</td></tr>
+        <tr><td>1 mililiter</td><td>1 cm³</td></tr>
+        <tr><td>1 m³</td><td>1.000 liter</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5. Prefiks (Awalan) Satuan SI</h3>
+    <p>Awalan berikut bisa dipasangkan di depan satuan pokok mana pun (meter, gram, sekon, dll) untuk menyatakan kelipatannya:</p>
+    <table>
+      <caption>Tabel 7 — Prefiks Satuan SI yang Umum Dipakai</caption>
+      <thead><tr><th>Awalan</th><th>Simbol</th><th>Faktor Pengali</th></tr></thead>
+      <tbody>
+        <tr><td>kilo</td><td class="sym">k</td><td>1.000 (10³)</td></tr>
+        <tr><td>hekto</td><td class="sym">h</td><td>100 (10²)</td></tr>
+        <tr><td>deka</td><td class="sym">da</td><td>10 (10¹)</td></tr>
+        <tr><td>(satuan pokok)</td><td class="sym">—</td><td>1 (10⁰)</td></tr>
+        <tr><td>desi</td><td class="sym">d</td><td>0,1 (10⁻¹)</td></tr>
+        <tr><td>senti</td><td class="sym">c</td><td>0,01 (10⁻²)</td></tr>
+        <tr><td>mili</td><td class="sym">m</td><td>0,001 (10⁻³)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6. Contoh Soal Langkah demi Langkah</h3>
+    <div class="step-example">
+      <div class="step-q">Contoh 1: Ubahlah 2,5 km menjadi cm.</div>
+      <ol>
+        <li>Dari km ke cm ada 5 langkah tangga ke kanan (km→hm→dam→m→dm→cm).</li>
+        <li>Faktor pengali = 10⁵ = 100.000.</li>
+        <li>2,5 km = 2,5 × 100.000 = <strong>250.000 cm</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 2: Ubahlah 3.400 gram menjadi kilogram.</div>
+      <ol>
+        <li>Dari g ke kg ada 3 langkah tangga ke kiri (g→dag→hg→kg).</li>
+        <li>Faktor pembagi = 10³ = 1.000.</li>
+        <li>3.400 g = 3.400 ÷ 1.000 = <strong>3,4 kg</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 3: Sebuah perjalanan memakan waktu 2 jam 15 menit. Berapa detik?</div>
+      <ol>
+        <li>2 jam = 2 × 3.600 = 7.200 sekon.</li>
+        <li>15 menit = 15 × 60 = 900 sekon.</li>
+        <li>Total = 7.200 + 900 = <strong>8.100 sekon</strong>.</li>
+      </ol>
+    </div>
+
+    <h3>7. Coba Sendiri: Alat Konversi Satuan</h3>
+    <div class="converter">
+      <div class="demo-label">Pilih jenis besaran, masukkan nilai, lalu pilih satuan asal dan satuan tujuan — hasilnya muncul otomatis.</div>
+      <div class="converter-row">
+        <div class="converter-field">
+          <label for="convCategory">Jenis Besaran</label>
+          <select id="convCategory">
+            <option value="panjang">Panjang</option>
+            <option value="massa">Massa</option>
+            <option value="waktu">Waktu</option>
+          </select>
+        </div>
+        <div class="converter-field">
+          <label for="convValue">Nilai</label>
+          <input type="number" id="convValue" value="1" step="any">
+        </div>
+        <div class="converter-field">
+          <label for="convFrom">Dari Satuan</label>
+          <select id="convFrom"></select>
+        </div>
+        <div class="converter-swap">
+          <button type="button" id="convSwapBtn" title="Tukar satuan asal dan tujuan">⇄</button>
+        </div>
+        <div class="converter-field">
+          <label for="convTo">Ke Satuan</label>
+          <select id="convTo"></select>
+        </div>
+      </div>
+      <div class="converter-result" id="convResult">1 m = 1 m</div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="notasi">
+          <span class="title">🔬 Notasi Ilmiah</span>
+          <span class="desc">Pelajari cara menuliskan bilangan sangat besar atau sangat kecil secara ringkas.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan2">
+          <span class="title">📝 Latihan 2 — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu khusus tentang konversi satuan.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NOTASI ILMIAH (MATERI 3) ================= -->
+  <section class="panel" id="panel-notasi">
+    <h2><span class="tag">Materi 3</span>Notasi Ilmiah (Bentuk Baku)</h2>
+    <p>Dalam sains, kita sering bertemu bilangan yang sangat besar (misalnya jarak Bumi ke Matahari) atau sangat kecil (misalnya ukuran sebuah atom). Menuliskannya dalam bentuk biasa akan sangat panjang dan mudah salah hitung. Untuk itu digunakan <strong>notasi ilmiah</strong> (disebut juga bentuk baku), yaitu cara menuliskan bilangan dalam bentuk:</p>
+    <div class="note">📐 <strong>a × 10ⁿ</strong>, dengan syarat <strong>1 ≤ a &lt; 10</strong> dan <strong>n</strong> adalah bilangan bulat (boleh positif, negatif, atau nol).</div>
+
+    <h3>1. Aturan Penulisan</h3>
+    <p><strong>a</strong> disebut <em>mantissa</em> (koefisien), nilainya harus antara 1 sampai kurang dari 10. <strong>n</strong> disebut <em>eksponen</em> (pangkat): bernilai <strong>positif</strong> untuk bilangan yang lebih besar dari atau sama dengan 10, dan bernilai <strong>negatif</strong> untuk bilangan yang lebih kecil dari 1.</p>
+
+    <h3>2. Mengubah Bilangan Biasa ke Notasi Ilmiah</h3>
+    <table>
+      <caption>Tabel 8 — Bilangan Besar ke Notasi Ilmiah</caption>
+      <thead><tr><th>Bilangan Biasa</th><th>Notasi Ilmiah</th></tr></thead>
+      <tbody>
+        <tr><td>5.000</td><td>5 × 10³</td></tr>
+        <tr><td>45.000</td><td>4,5 × 10⁴</td></tr>
+        <tr><td>250.000</td><td>2,5 × 10⁵</td></tr>
+        <tr><td>9.000.000</td><td>9 × 10⁶</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <caption>Tabel 9 — Bilangan Kecil ke Notasi Ilmiah</caption>
+      <thead><tr><th>Bilangan Biasa</th><th>Notasi Ilmiah</th></tr></thead>
+      <tbody>
+        <tr><td>0,5</td><td>5 × 10⁻¹</td></tr>
+        <tr><td>0,0032</td><td>3,2 × 10⁻³</td></tr>
+        <tr><td>0,00061</td><td>6,1 × 10⁻⁴</td></tr>
+        <tr><td>0,0000009</td><td>9 × 10⁻⁷</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note">💡 Cara cepat: hitung berapa langkah koma harus digeser supaya hanya ada satu angka bukan-nol di depan koma. Jika bilangan digeser ke kiri (bilangan besar) → pangkat positif. Jika koma digeser ke kanan (bilangan kecil) → pangkat negatif.</div>
+
+    <h3>3. Contoh Soal Langkah demi Langkah</h3>
+    <div class="step-example">
+      <div class="step-q">Contoh 1: Ubahlah 320.000 menjadi notasi ilmiah.</div>
+      <ol>
+        <li>Geser koma ke kiri sampai tersisa satu angka di depan koma: 3,20000.</li>
+        <li>Koma digeser 5 langkah ke kiri, jadi pangkatnya +5.</li>
+        <li>320.000 = <strong>3,2 × 10⁵</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 2: Ubahlah 0,00047 menjadi notasi ilmiah.</div>
+      <ol>
+        <li>Geser koma ke kanan sampai tersisa satu angka bukan-nol di depan koma: 4,7.</li>
+        <li>Koma digeser 4 langkah ke kanan, jadi pangkatnya −4.</li>
+        <li>0,00047 = <strong>4,7 × 10⁻⁴</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 3: Ubahlah 6 × 10³ menjadi bilangan biasa.</div>
+      <ol>
+        <li>Pangkat +3 berarti koma digeser 3 langkah ke kanan.</li>
+        <li>6,000 → 6000.</li>
+        <li>6 × 10³ = <strong>6.000</strong>.</li>
+      </ol>
+    </div>
+
+    <h3>4. Coba Sendiri: Alat Konversi Notasi Ilmiah</h3>
+    <div class="demo">
+      <div class="demo-label">Ketik sebuah bilangan (besar atau kecil), bentuk notasi ilmiahnya akan muncul otomatis di bawah.</div>
+      <div class="converter">
+        <div class="converter-row">
+          <div class="converter-field" style="flex:1;">
+            <label for="notasiInput">Bilangan Biasa</label>
+            <input type="number" id="notasiInput" value="320000" step="any">
+          </div>
+        </div>
+        <div class="converter-result" id="notasiResult">3,2 × 10⁵</div>
+      </div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="angkapenting">
+          <span class="title">🔢 Angka Penting</span>
+          <span class="desc">Pelajari aturan angka penting dan cara menghitungnya dalam pengukuran.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan3">
+          <span class="title">📝 Latihan 3 — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu tentang notasi ilmiah.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN 3 (NOTASI ILMIAH) ================= -->
+  <section class="panel" id="panel-latihan3">
+    <h2><span class="tag">Latihan 3</span>Uji Pemahamanmu — Notasi Ilmiah (10 Soal)</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> khusus tentang <strong>notasi ilmiah</strong>, dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard3">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName3">Nama Lengkap</label>
+        <input type="text" id="latihanName3" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass3">Kelas</label>
+        <input type="text" id="latihanClass3" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError3">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn3" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea3" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText3">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn3" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer3"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn3" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn3" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox3">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue3">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid3"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn3" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox3">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay3">0<span> / 10</span></div>
+          <p id="scoreMessage3"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList3"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn3">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn3" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus3">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ANGKA PENTING (MATERI 4) ================= -->
+  <section class="panel" id="panel-angkapenting">
+    <h2><span class="tag">Materi 4</span>Angka Penting</h2>
+    <p>Setiap kali kita mengukur sesuatu, hasilnya tidak akan pernah 100% pasti — selalu ada satu angka terakhir yang nilainya diperkirakan (ditaksir). Semua angka yang benar-benar berasal dari hasil pengukuran, baik angka pasti maupun satu angka taksiran di ujungnya, disebut <strong>angka penting</strong>. Memahami angka penting penting supaya laporan hasil pengukuran atau perhitungan tidak "berpura-pura" lebih teliti daripada alat ukur yang sebenarnya dipakai.</p>
+    <div class="note">📏 <strong>Angka penting</strong> = seluruh angka pasti (hasil pembacaan skala) ditambah satu angka taksiran (angka terakhir yang nilainya diperkirakan) dari suatu hasil pengukuran.</div>
+
+    <h3>1. Aturan Angka Penting</h3>
+    <table>
+      <caption>Tabel 10 — Aturan Menentukan Angka Penting</caption>
+      <thead><tr><th>No</th><th>Aturan</th><th>Contoh</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Semua angka bukan nol adalah angka penting.</td><td>2.145 → 4 angka penting</td></tr>
+        <tr><td>2</td><td>Angka nol yang terletak di antara dua angka bukan nol adalah angka penting.</td><td>205 → 3 angka penting</td></tr>
+        <tr><td>3</td><td>Angka nol di belakang koma desimal dan di belakang angka bukan nol adalah angka penting.</td><td>25,00 → 4 angka penting</td></tr>
+        <tr><td>4</td><td>Angka nol yang hanya berfungsi sebagai penunjuk tempat desimal (di depan angka bukan nol) bukan angka penting.</td><td>0,0025 → 2 angka penting</td></tr>
+        <tr><td>5</td><td>Untuk menghindari bilangan yang ambigu, gunakan notasi ilmiah agar jumlah angka penting jelas.</td><td>2,50 × 10³ → 3 angka penting</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Contoh Penerapan Aturan</h3>
+    <table>
+      <caption>Tabel 11 — Contoh Menghitung Jumlah Angka Penting</caption>
+      <thead><tr><th>Bilangan</th><th>Jumlah Angka Penting</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr><td>304</td><td>3</td><td>Nol di antara dua angka bukan nol termasuk angka penting.</td></tr>
+        <tr><td>0,0070</td><td>2</td><td>Nol di depan bukan angka penting; nol di belakang koma setelah angka bukan nol termasuk angka penting.</td></tr>
+        <tr><td>12,50</td><td>4</td><td>Semua angka, termasuk nol di belakang koma, adalah angka penting.</td></tr>
+        <tr><td>0,00500</td><td>3</td><td>Dua nol pertama hanya penunjuk tempat desimal; dua nol terakhir adalah angka penting.</td></tr>
+      </tbody>
+    </table>
+    <div class="note">💡 Cara cepat: cari angka bukan nol pertama dari kiri, lalu hitung semua angka mulai dari situ. Nol yang muncul sebelum angka bukan nol pertama TIDAK dihitung; nol yang muncul di antara atau di belakangnya (jika ada koma desimal) DIHITUNG.</div>
+
+    <h3>3. Operasi Hitung dengan Angka Penting</h3>
+    <p>Saat hasil pengukuran digunakan dalam perhitungan, jumlah angka penting hasil akhirnya mengikuti aturan berikut agar tidak "lebih teliti" daripada data aslinya.</p>
+    <div class="step-example">
+      <div class="step-q">Aturan 1 — Penjumlahan dan Pengurangan: hasil akhir hanya boleh memiliki satu angka taksiran, mengikuti jumlah angka di belakang koma yang PALING SEDIKIT.</div>
+      <ol>
+        <li>12,5 memiliki 1 angka di belakang koma; 3,45 memiliki 2 angka di belakang koma.</li>
+        <li>Jumlahkan dulu secara biasa: 12,5 + 3,45 = 15,95.</li>
+        <li>Bulatkan ke 1 angka di belakang koma (mengikuti yang paling sedikit): <strong>16,0</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Aturan 2 — Perkalian dan Pembagian: hasil akhir mengikuti jumlah ANGKA PENTING yang PALING SEDIKIT dari bilangan yang dioperasikan.</div>
+      <ol>
+        <li>4,5 memiliki 2 angka penting; 2,4 memiliki 2 angka penting.</li>
+        <li>Kalikan dulu secara biasa: 4,5 × 2,4 = 10,8.</li>
+        <li>Bulatkan menjadi 2 angka penting (mengikuti yang paling sedikit): <strong>11</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Aturan 3 — Pembulatan Angka Penting: jika angka setelah angka terakhir yang dipertahankan bernilai 5 atau lebih, bulatkan naik; jika kurang dari 5, bulatkan turun (tetap).</div>
+      <ol>
+        <li>Bulatkan 12,346 menjadi 3 angka penting: angka ke-4 adalah 4 (kurang dari 5) → tetap.</li>
+        <li>Hasilnya: <strong>12,3</strong>.</li>
+        <li>Bulatkan 2,678 menjadi 3 angka penting: angka ke-4 adalah 8 (lebih dari 5) → naik.</li>
+        <li>Hasilnya: <strong>2,68</strong>.</li>
+      </ol>
+    </div>
+
+    <h3>4. Coba Sendiri: Alat Hitung Angka Penting</h3>
+    <div class="demo">
+      <div class="demo-label">Ketik sebuah bilangan hasil pengukuran (gunakan koma untuk desimal, misal 0,0025 atau 12,50), jumlah angka pentingnya akan dihitung otomatis di bawah.</div>
+      <div class="converter">
+        <div class="converter-row">
+          <div class="converter-field" style="flex:1;">
+            <label for="apInput">Bilangan Hasil Pengukuran</label>
+            <input type="text" id="apInput" value="12,50">
+          </div>
+        </div>
+        <div class="converter-result" id="apResult">4 angka penting</div>
+      </div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="jangkasorong">
+          <span class="title">📐 Jangka Sorong</span>
+          <span class="desc">Pelajari bagian-bagian dan cara membaca skala jangka sorong.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan4">
+          <span class="title">📝 Latihan 4 — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu tentang angka penting.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN 4 (ANGKA PENTING) ================= -->
+  <section class="panel" id="panel-latihan4">
+    <h2><span class="tag">Latihan 4</span>Uji Pemahamanmu — Angka Penting (10 Soal)</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> khusus tentang <strong>angka penting</strong>, dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard4">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName4">Nama Lengkap</label>
+        <input type="text" id="latihanName4" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass4">Kelas</label>
+        <input type="text" id="latihanClass4" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError4">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn4" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea4" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText4">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn4" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer4"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn4" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn4" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox4">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue4">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid4"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn4" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox4">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay4">0<span> / 10</span></div>
+          <p id="scoreMessage4"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList4"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn4">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn4" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus4">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN 2 (KONVERSI SATUAN) ================= -->
+  <section class="panel" id="panel-latihan2">
+    <h2><span class="tag">Latihan 2</span>Uji Pemahamanmu — Konversi Satuan (10 Soal)</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> khusus tentang <strong>konversi satuan</strong> (panjang, massa, waktu, volume, dan prefiks SI), dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard2">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName2">Nama Lengkap</label>
+        <input type="text" id="latihanName2" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass2">Kelas</label>
+        <input type="text" id="latihanClass2" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError2">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn2" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea2" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText2">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn2" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer2"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn2" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn2" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox2">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue2">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid2"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn2" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox2">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay2">0<span> / 10</span></div>
+          <p id="scoreMessage2"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList2"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn2">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn2" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus2">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN ================= -->
+  <section class="panel" id="panel-latihan">
+    <h2><span class="tag">Latihan</span>Uji Pemahamanmu — 10 Soal</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName">Nama Lengkap</label>
+        <input type="text" id="latihanName" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass">Kelas</label>
+        <input type="text" id="latihanClass" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay">0<span> / 10</span></div>
+          <p id="scoreMessage"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= JANGKA SORONG (MATERI 5) ================= -->
+  <section class="panel" id="panel-jangkasorong">
+    <h2><span class="tag">Materi 5</span>Jangka Sorong</h2>
+    <p><strong>Jangka sorong</strong> (vernier caliper) adalah alat ukur panjang yang lebih teliti daripada mistar biasa. Alat ini digunakan untuk mengukur benda-benda yang sulit diukur dengan mistar, misalnya diameter luar sebuah pipa, diameter dalam sebuah cincin, atau kedalaman sebuah lubang. Ciri khas jangka sorong adalah adanya <strong>dua skala</strong> yang dibaca bersamaan: skala utama dan skala nonius (skala vernier).</p>
+    <div class="note">📐 <strong>Ketelitian jangka sorong</strong> pada umumnya adalah <strong>0,1 mm</strong> atau <strong>0,01 cm</strong>, jauh lebih teliti daripada mistar yang hanya 1 mm.</div>
+
+    <h3>1. Bagian-Bagian Jangka Sorong</h3>
+    <table>
+      <caption>Tabel 12 — Bagian dan Fungsi Jangka Sorong</caption>
+      <thead><tr><th>No</th><th>Bagian</th><th>Fungsi</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Rahang tetap</td><td>Bagian diam yang menjadi acuan (memuat skala utama)</td></tr>
+        <tr><td>2</td><td>Rahang geser</td><td>Bagian yang dapat digeser untuk menjepit benda (memuat skala nonius)</td></tr>
+        <tr><td>3</td><td>Rahang luar (atas)</td><td>Mengukur diameter atau panjang luar suatu benda</td></tr>
+        <tr><td>4</td><td>Rahang dalam (bawah)</td><td>Mengukur diameter dalam suatu benda, misalnya lubang atau cincin</td></tr>
+        <tr><td>5</td><td>Tangkai ukur kedalaman (depth probe)</td><td>Mengukur kedalaman suatu lubang atau celah</td></tr>
+        <tr><td>6</td><td>Skala utama</td><td>Skala dalam cm/mm yang tertera pada rahang tetap</td></tr>
+        <tr><td>7</td><td>Skala nonius (vernier)</td><td>Skala tambahan pada rahang geser untuk membaca angka desimal</td></tr>
+        <tr><td>8</td><td>Baut pengunci</td><td>Mengunci posisi rahang geser agar tidak berubah saat dibaca</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Fungsi Jangka Sorong</h3>
+    <p>Secara umum, jangka sorong memiliki tiga fungsi utama pengukuran panjang:</p>
+    <table>
+      <caption>Tabel 13 — Fungsi Pengukuran Jangka Sorong</caption>
+      <thead><tr><th>Fungsi</th><th>Bagian yang Digunakan</th><th>Contoh Benda</th></tr></thead>
+      <tbody>
+        <tr><td>Mengukur diameter/panjang luar</td><td>Rahang luar (atas)</td><td>Diameter kelereng, tebal koin</td></tr>
+        <tr><td>Mengukur diameter dalam</td><td>Rahang dalam (bawah)</td><td>Diameter dalam pipa, cincin</td></tr>
+        <tr><td>Mengukur kedalaman</td><td>Tangkai ukur kedalaman</td><td>Kedalaman lubang, tabung</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3. Cara Membaca Skala Jangka Sorong</h3>
+    <p>Hasil pengukuran jangka sorong dibaca dengan menggabungkan dua skala, menggunakan rumus berikut:</p>
+    <div class="note">✏️ <strong>Hasil ukur = Skala Utama + (Skala Nonius × Ketelitian)</strong>, dengan ketelitian umumnya 0,1 mm.</div>
+    <p>Skala utama dibaca dari garis nol skala nonius, yaitu angka pada skala utama tepat di sebelah kiri (atau berimpit dengan) garis nol skala nonius. Skala nonius dibaca dari garis pada skala nonius yang paling lurus/berimpit dengan salah satu garis skala utama.</p>
+
+    <div class="step-example">
+      <div class="step-q">Contoh 1 — Membaca hasil pengukuran jangka sorong</div>
+      <ol>
+        <li>Skala utama menunjukkan angka tepat sebelum garis nol nonius: <strong>2,3 cm</strong> (23 mm).</li>
+        <li>Garis skala nonius yang paling berimpit dengan skala utama adalah garis ke-<strong>4</strong>.</li>
+        <li>Skala nonius = 4 × 0,1 mm = <strong>0,4 mm</strong>.</li>
+        <li>Hasil ukur = 23 mm + 0,4 mm = <strong>23,4 mm</strong> atau <strong>2,34 cm</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 2 — Membaca hasil pengukuran jangka sorong</div>
+      <ol>
+        <li>Skala utama menunjukkan <strong>5,7 cm</strong> (57 mm).</li>
+        <li>Garis skala nonius yang paling berimpit adalah garis ke-<strong>6</strong>.</li>
+        <li>Skala nonius = 6 × 0,1 mm = <strong>0,6 mm</strong>.</li>
+        <li>Hasil ukur = 57 mm + 0,6 mm = <strong>57,6 mm</strong> atau <strong>5,76 cm</strong>.</li>
+      </ol>
+    </div>
+
+    <h3>4. Coba Sendiri: Alat Hitung Hasil Pengukuran Jangka Sorong</h3>
+    <div class="demo">
+      <div class="demo-label">Masukkan skala utama (mm) dan angka garis skala nonius yang berimpit (0–9), hasil pengukuran akan dihitung otomatis.</div>
+      <div class="converter">
+        <div class="converter-row">
+          <div class="converter-field">
+            <label for="jsUtama">Skala Utama (mm)</label>
+            <input type="text" id="jsUtama" value="23">
+          </div>
+          <div class="converter-field">
+            <label for="jsNonius">Garis Nonius Berimpit (0–9)</label>
+            <input type="text" id="jsNonius" value="4">
+          </div>
+        </div>
+        <div class="converter-result" id="jsResult">23,4 mm</div>
+      </div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="mikrometer">
+          <span class="title">🔩 Mikrometer Sekrup</span>
+          <span class="desc">Pelajari bagian-bagian dan cara membaca skala mikrometer sekrup.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan5">
+          <span class="title">📝 Latihan 5 — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu tentang jangka sorong.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN 5 (JANGKA SORONG) ================= -->
+  <section class="panel" id="panel-latihan5">
+    <h2><span class="tag">Latihan 5</span>Uji Pemahamanmu — Jangka Sorong (10 Soal)</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> khusus tentang <strong>jangka sorong</strong>, dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard5">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName5">Nama Lengkap</label>
+        <input type="text" id="latihanName5" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass5">Kelas</label>
+        <input type="text" id="latihanClass5" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError5">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn5" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea5" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText5">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn5" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer5"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn5" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn5" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox5">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue5">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid5"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn5" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox5">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay5">0<span> / 10</span></div>
+          <p id="scoreMessage5"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList5"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn5">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn5" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus5">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MIKROMETER SEKRUP (MATERI 6) ================= -->
+  <section class="panel" id="panel-mikrometer">
+    <h2><span class="tag">Materi 6</span>Mikrometer Sekrup</h2>
+    <p><strong>Mikrometer sekrup</strong> (micrometer screw gauge) adalah alat ukur panjang yang paling teliti di antara mistar dan jangka sorong. Alat ini digunakan untuk mengukur benda-benda yang sangat tipis atau sangat kecil, misalnya tebal kertas, diameter kawat, atau diameter kabel. Mikrometer sekrup bekerja berdasarkan prinsip putaran sekrup, sehingga sering disebut juga <strong>skrup mikrometer</strong>.</p>
+    <div class="note">🔩 <strong>Ketelitian mikrometer sekrup</strong> adalah <strong>0,01 mm</strong>, sepuluh kali lebih teliti daripada jangka sorong.</div>
+
+    <h3>1. Bagian-Bagian Mikrometer Sekrup</h3>
+    <table>
+      <caption>Tabel 14 — Bagian dan Fungsi Mikrometer Sekrup</caption>
+      <thead><tr><th>No</th><th>Bagian</th><th>Fungsi</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Poros tetap (anvil)</td><td>Landasan diam tempat benda diletakkan</td></tr>
+        <tr><td>2</td><td>Poros geser (spindle)</td><td>Bagian yang bergerak maju-mundur menjepit benda</td></tr>
+        <tr><td>3</td><td>Laras (sleeve)</td><td>Tempat skala utama tertera, tidak bergerak</td></tr>
+        <tr><td>4</td><td>Selubung luar/timbel (thimble)</td><td>Bagian yang diputar dan memuat skala putar (skala nonius)</td></tr>
+        <tr><td>5</td><td>Roda bergerigi (ratchet)</td><td>Memutar thimble dengan tekanan konsisten agar benda tidak rusak/terjepit berlebihan</td></tr>
+        <tr><td>6</td><td>Pengunci (lock)</td><td>Mengunci posisi spindle agar tidak berubah saat dibaca</td></tr>
+        <tr><td>7</td><td>Skala utama</td><td>Skala dalam mm (dan setengah mm) pada laras</td></tr>
+        <tr><td>8</td><td>Skala putar (nonius)</td><td>Skala pada thimble, biasanya terbagi 50 garis</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2. Cara Membaca Skala Mikrometer Sekrup</h3>
+    <p>Hasil pengukuran mikrometer sekrup dibaca dengan menggabungkan skala utama pada laras dan skala putar pada thimble, menggunakan rumus berikut:</p>
+    <div class="note">✏️ <strong>Hasil ukur = Skala Utama + (Skala Putar × Ketelitian)</strong>, dengan ketelitian 0,01 mm.</div>
+    <p>Skala utama dibaca dari garis skala pada laras yang masih terlihat di depan tepi thimble (termasuk garis setengah mm jika terlihat). Skala putar dibaca dari garis pada thimble yang tepat berimpit dengan garis mendatar (sumbu) pada laras.</p>
+
+    <div class="step-example">
+      <div class="step-q">Contoh 1 — Membaca hasil pengukuran mikrometer sekrup</div>
+      <ol>
+        <li>Skala utama menunjukkan <strong>5,5 mm</strong> (garis terakhir yang masih terlihat pada laras).</li>
+        <li>Garis skala putar yang berimpit dengan sumbu laras adalah garis ke-<strong>28</strong>.</li>
+        <li>Skala putar = 28 × 0,01 mm = <strong>0,28 mm</strong>.</li>
+        <li>Hasil ukur = 5,5 mm + 0,28 mm = <strong>5,78 mm</strong>.</li>
+      </ol>
+    </div>
+    <div class="step-example">
+      <div class="step-q">Contoh 2 — Membaca hasil pengukuran mikrometer sekrup</div>
+      <ol>
+        <li>Skala utama menunjukkan <strong>7,0 mm</strong>.</li>
+        <li>Garis skala putar yang berimpit adalah garis ke-<strong>15</strong>.</li>
+        <li>Skala putar = 15 × 0,01 mm = <strong>0,15 mm</strong>.</li>
+        <li>Hasil ukur = 7,0 mm + 0,15 mm = <strong>7,15 mm</strong>.</li>
+      </ol>
+    </div>
+
+    <h3>3. Coba Sendiri: Alat Hitung Hasil Pengukuran Mikrometer Sekrup</h3>
+    <div class="demo">
+      <div class="demo-label">Masukkan skala utama (mm, kelipatan 0,5) dan angka skala putar yang berimpit (0–49), hasil pengukuran akan dihitung otomatis.</div>
+      <div class="converter">
+        <div class="converter-row">
+          <div class="converter-field">
+            <label for="mkUtama">Skala Utama (mm)</label>
+            <input type="text" id="mkUtama" value="5,5">
+          </div>
+          <div class="converter-field">
+            <label for="mkPutar">Skala Putar Berimpit (0–49)</label>
+            <input type="text" id="mkPutar" value="28">
+          </div>
+        </div>
+        <div class="converter-result" id="mkResult">5,78 mm</div>
+      </div>
+    </div>
+
+    <div class="materi-next">
+      <div class="label">Lanjutkan ke</div>
+      <div class="materi-next-row">
+        <button type="button" class="materi-next-card tab-btn" data-tab="latihan6">
+          <span class="title">📝 Latihan 6 — 10 Soal</span>
+          <span class="desc">Uji pemahamanmu tentang mikrometer sekrup.</span>
+        </button>
+        <button type="button" class="materi-next-card tab-btn" data-tab="evaluasi">
+          <span class="title">🎯 Evaluasi Akhir — 30 Soal</span>
+          <span class="desc">Uji pemahamanmu atas seluruh materi (5 soal dari setiap tab).</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LATIHAN 6 (MIKROMETER SEKRUP) ================= -->
+  <section class="panel" id="panel-latihan6">
+    <h2><span class="tag">Latihan 6</span>Uji Pemahamanmu — Mikrometer Sekrup (10 Soal)</h2>
+    <div class="quiz-intro">
+      Latihan ini terdiri dari <strong>10 soal</strong> khusus tentang <strong>mikrometer sekrup</strong>, dengan berbagai jenis: pilihan ganda, pilihan ganda kompleks (centang), uraian singkat, jodohkan, dan benar/salah. Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Perhatikan juga sisa waktu pengerjaan di sudut kanan atas.
+    </div>
+
+    <div class="login-card" id="quizStartCard6">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil latihanmu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName6">Nama Lengkap</label>
+        <input type="text" id="latihanName6" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass6">Kelas</label>
+        <input type="text" id="latihanClass6" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError6">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn6" style="width:100%;">Mulai Latihan</button>
+    </div>
+
+    <div id="quizArea6" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText6">0 / 10 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn6" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer6"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn6" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn6" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox6">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue6">60:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid6"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn6" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox6">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay6">0<span> / 10</span></div>
+          <p id="scoreMessage6"></p>
+        </div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList6"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn6">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn6" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus6">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EVALUASI (TAB 7) ================= -->
+  <section class="panel" id="panel-evaluasi">
+    <h2><span class="tag">Evaluasi</span>Evaluasi Akhir — 30 Soal</h2>
+    <div class="quiz-intro">
+      Evaluasi ini terdiri dari <strong>30 soal</strong> yang diambil dari <strong>seluruh materi</strong> (5 soal dari setiap tab: Besaran &amp; Satuan, Konversi Satuan, Notasi Ilmiah, Angka Penting, Jangka Sorong, dan Mikrometer Sekrup). Soal ditampilkan <strong>satu per satu</strong> — gunakan panel nomor di sebelah kanan untuk berpindah soal, dan tekan tombol <strong>🚩 Ragu-ragu</strong> jika kamu masih belum yakin dengan jawabanmu. Waktu pengerjaan yang diberikan adalah <strong>90 menit</strong>. Setelah selesai, kamu akan melihat <strong>statistik per topik</strong> untuk mengetahui bagian mana yang masih perlu dipelajari ulang.
+    </div>
+
+    <div class="login-card" id="quizStartCard7">
+      <div class="eyebrow">Sebelum Mulai</div>
+      <h1>Isi Data Diri</h1>
+      <p class="subtitle">Isi data dirimu dulu supaya hasil evaluasimu bisa dikenali gurumu.</p>
+      <div class="field">
+        <label for="latihanName7">Nama Lengkap</label>
+        <input type="text" id="latihanName7" placeholder="Contoh: Ayu Lestari">
+      </div>
+      <div class="field">
+        <label for="latihanClass7">Kelas</label>
+        <input type="text" id="latihanClass7" placeholder="Contoh: VII-A">
+      </div>
+      <div class="login-error" id="latihanLoginError7">Nama dan kelas wajib diisi terlebih dahulu.</div>
+      <button class="btn big" id="startLatihanBtn7" style="width:100%;">Mulai Evaluasi</button>
+    </div>
+
+    <div id="quizArea7" style="display:none;">
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div class="qcard-topbar">
+            <span class="qcard-progress" id="progressText7">0 / 30 soal terjawab</span>
+            <button class="doubt-toggle" id="doubtToggleBtn7" type="button">🚩 Tandai Ragu-ragu</button>
+          </div>
+          <div id="quizContainer7"></div>
+          <div class="qnav-buttons">
+            <button class="btn ghost" id="prevBtn7" type="button">← Sebelumnya</button>
+            <button class="btn" id="nextBtn7" type="button">Berikutnya →</button>
+          </div>
+        </div>
+
+        <div class="quiz-sidebar">
+          <div class="timer-box" id="timerBox7">
+            <div class="timer-label">Sisa Waktu Pengerjaan</div>
+            <div class="timer-value" id="timerValue7">90:00</div>
+          </div>
+          <div class="qn-panel">
+            <div class="qn-panel-title">Navigasi Soal</div>
+            <div class="qn-grid" id="qnGrid7"></div>
+            <div class="qn-legend">
+              <div class="row"><span class="dot answered"></span>Sudah dijawab</div>
+              <div class="row"><span class="dot doubt"></span>Ditandai ragu-ragu</div>
+              <div class="row"><span class="dot current"></span>Sedang dikerjakan</div>
+            </div>
+          </div>
+          <button class="btn big" id="submitBtn7" style="width:100%;">Kumpulkan Jawaban</button>
+        </div>
+      </div>
+
+      <div id="resultBox7">
+        <div class="result-score">
+          <div class="score" id="scoreDisplay7">0<span> / 30</span></div>
+          <p id="scoreMessage7"></p>
+        </div>
+        <h3>Statistik per Topik</h3>
+        <div id="topicStatsBox7"></div>
+        <h3>Rincian Jawaban</h3>
+        <div id="reviewList7"></div>
+        <div class="download-row">
+          <button class="btn big" id="sendSheetBtn7">📤 Kirim ke Rekap Guru</button>
+          <button class="btn ghost big" id="downloadBtn7" style="margin-left:10px;">⬇ Unduh Salinan (cadangan)</button>
+          <p id="sendStatus7">Nilaimu akan otomatis masuk ke spreadsheet rekap milik guru. Unduh salinan file di sebelahnya sebagai bukti cadangan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INFO PENGEMBANG ================= -->
+  <section class="panel" id="panel-dev">
+    <h2><span class="tag">Info</span>Info Pengembang</h2>
+    <div class="dev-card">
+      <div class="dev-avatar"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAFAAUADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD2Uimlc1ZKCm7MmuQ6ivsPpSFfarJSmlOKAMy+4QJ61TCe1XLobpj6DiowlItEGyjbU+yjZRYZDto21OV9qTZRYLkBWsDVjuu3H93iulZcDJrlblt8zse7E0AzPuF4NcR4okJuTH2yK7u4AAJNcB4g+fUGweMmrp7mNTYo2y/MK1bVeao2y/MK1bRM1uc5dgX5au26fLUcMQ+zmQnHOAPWrVuvyDjtQSyRFqdFpETip0WgQir7VIq4FORR6VKq0AMC8dKeEp4WnhaAGBacEqQLShaBEe2jbU22jbQFiLbShal20uKYiHZS7OalC0uKLAQ7KNntU22l20WAg20BKn20bcUwISlQxpiVlPfkVc21DKu11b0PNJjE2UhT2qxt4pNtMDvylN2VZ2UbK5TtK+2o5/kjZ/QVbKVT1LhAnqaGNGVtJOTRt56VOVo20iyHbShal20baAIdlGyp9tG2gChqJ8qzlfoduBXKN1rpfEz+XYqnd3x+VcpJLg0h2K+puEgY8dO9edXcnm3Tt05xWv8AELxO+jiFFtlmEwIOXxt9689XxOxbItRj3etqa6mNRN6HZWo6VsWaVwFv4qZOtkP+/n/1q0IPG4jxnTs/9tf/AK1aGPKz0FR8lXoV+UfSvOh4/Tbg6W3P/Tb/AOtVmP4jwqBnSpOP+mw/woJcGeiouamVRXna/Eu2HXSZv+/y/wCFSr8TrQddKuPwmX/CmLkZ6Iq1IBXna/FGwHXSrr/v6lPHxS07vpd5n/rolAcrPRAKeBXnY+Kel450y+H/AANKevxU0jvpt/8Amn+NAuV9j0MClArz5fipow/5h2of+Of41IPipofex1Af8BT/AOKoDlfY78ClArgh8VNAPW01Ef8AAE/+Kpy/FPw/jm21EH08tT/7NQHKzu8UuK4UfFHw53h1H/vyv/xVOHxQ8Nf3NQH/AGwH+NAuR9juMUoFcQPif4Z/6f8A/wAB/wD69PHxN8Md5L4f9ux/xphys7XAoxXGj4l+Fj/y3ux9bY/404fEnwqf+Xu4H1tmoDlZ2GKXbXIj4jeFD/y/yj627/4U9fiJ4TI/5CbD/t3f/CgOVnV7ajuE3RkD0rmx8QvCR66sB9YX/wAKcfH3hI8f2xH/AN+3H9KQKLOji+aJSeuKeFFcxa+OfC20q2swLgnBIYZ/SrK+NPCzDI1y0/En/ChMLM9k2nvS7am20bfauex1lcr7VmXh33Dei8Ctec7I2b0FZO3160mVEg2UbKn2UbTSsWQBPal2VPto2UWAg2Ubam20hU07Acp4ucm4hiH8Kkn8a5m4B5roPEB83U5j/dO38qyZoMg1JR4l8bHuo7+zkhJ2bSG44znivMmnumcsWcE+nFe1fFizE7xRjAPpXnTeH3dvkKjPXJrphsYSbuc0bm6X/ls/50fbLocefJ+ddjpfgy8v5mjhMJZV3EsSBitVfhjq79HtP++z/hV6Ec1jzkXt2Ok8n50fb7sf8t3r0j/hVmtno1mf+2h/wpB8J9fY8LZn/tt/9ajQOY84GoXY/wCW70HUbz/nu1ekH4ReJP4YrI/9vH/1qT/hUPic9ILM/wDbyP8ACgOZHnH9o3mf9e1H9pXn/PdvyFein4PeLP4bS0Pp/pS01vg/4w7afbH6XSc0WFzHnv8AaV5/z2P5Cj+07z/nsfyFeg/8Kf8AGPbTIT9LpP8AGk/4VB4yPH9jp+FzH/jTsHMcB/ad7/z2/QUf2nef89f/AB0V3jfCDxoOmi5+lxH/APFU3/hUfjX/AKAbE+08f/xVFg5kcN/al5n/AFg/IUv9qXn98f8AfNdsfhL40Bx/YEv186P/AOKprfCjxqDx4en/AAkj/wDiqQcxxg1W77sv/fNOGrXf95P++a7A/CrxqP8AmW7o/wDA0/8AiqYfhb4zHJ8N3v8A44f/AGanYOY5Matd+qf980v9q3fqn/fNdUfhl4x7+Gb/APJf8aYfhr4xH/Msah/3wP8AGkLmOY/ta6HdPypf7Xuv9j8q6UfDfxgf+ZX1M/SMf40H4b+Lv+hY1Qf9sadg5jmxq90P7n5Uf2zdY5CflXQt8OfFo/5lvVP/AAHNRN8PfFy8/wDCOan/AOA5osHMYg1i5HZKd/bNx/cT9a1f+ED8Vj/mXNU/8BmpV8FeKEOW8O6mPrat/hRYfMjMXWJtuSifnQNcn/55J+ZroP8AhDtVbTn83RryGcONiNbsC474GOaonwbrGedJv1x/07t/hRYVz7/20bTU22grXMambqRxGqf3jn8qobat3rb7gjsvAqELSLWxEFpdhqXbS4pDuRbaNtS44o20DIStNf5VLHoBmp9vtVLWX8nTLhx12YH48UAcVcMZJXkPVmJqBhxUxqvcNsiZvQVKKPKPiJOJNYKAjC8Y9652A/N+FXvFM3n6rO46BiKzrTkn6V0Ixsb/AIYvxY3Lts37hg/NjFddB4itx9632j18wf4VwUaqoBxyRzW54bNml2r3luk0RGCXXdsPqBRzJESg3qd3ZX63Fo1ysBSJV3F5DtXHrn0qC38R2jyMsKpOV5JjkyPzxXM+Mdejks20iyQLCm0PIvAbH8IHp0rJ8Iyn7XInOGT+Ro5gVPS7PRl8QRd7N/8Avsf4VKviGEf8ucv/AH2K50UtURY6RfE0KsB9ilOf9sVKPE0X/PhJ/wB/B/hXH30oggFwSQsTKz/7ucH9Dn8KthsSbD1/wpi5UdOPE8X/AD4Sf9/B/hTx4oi/58Jf+/g/wrmRSikHKjpv+Enh/wCfGX/v4P8ACl/4SeHPNhL/AN9iuaFKOtAcqOlHiaH/AJ8Jf+/g/wAKUeJYP+fGX/vsVzQp1AcqOlHia2xzYzf99rR/wk1r0+w3H/fS1zdFArHR/wDCS23/AD5T/wDfS0f8JLa/8+c/5iucophY6VfE1qP+XKf8xTv+EotOn2O4/MVzNFA+U6b/AISqyH/Lnc/mKP8AhK7DvaXQ/AVzFIaQrI6j/hKtPP8Ay73Q/Af40f8ACTaef+WVyPwH+NcvikIphZG3qmt2NzJaSRpMHgnD/MvboauHxBpmfm8//vj/AOvXKyAEEYoQhlBPpQFj6P28VHOfLiZ/QZqzt9qpao2EVB/Ecn6CsDdGXt7nqaNoqTFG2kWR7KXbUgFLiiwEW2jbUmKCKLDuR4rD8XPs09I+hkkH5Dn/AArfIrlfGkubmCEfwIWP4n/61JjTOcNUtWmFvZtKQTgjgd+avGud8bzNFpTqgJOxnPoABj+bClFajex5FqchknlcnJZixP1NQWx2qT70+55qNeErZEM0Yr6AKA8TEgdRirdrqlvF/BJjOcACsMU5etJxTFc0LuUSyu6gjcSeateGJjFf52lgVIwOtZ/VAfUVY0R1XUo1YgZPekhyeh2UF3DMCUkU4OCOhB9x2/GphJltp4Pb3rJntYbkEBpI5VHDxthh/iPY5FZ1zfXemyCOYNNGx4aMYH1x2I64H61qjBm9f/vrG5i/vxsn5j/9VR6RfG6sbC4LZ3YQ8d9pB/UfpVKDUra6SaSJ84X95/skAj+qn8ah8JTo2mWsROHW7mx/ugNz+v6UAdTvpyPkZrNubpVVgxCqASWPoP8A9dLa3MjIC2MtzzwB7e5oA0w1ODVArepp4agRMGozUQNLmgCUNS7qizS5oAkzRmo80ZoAlzRmo80ZoAfmjNMzRmgB+aM0zNGaYhTTVOBj3oJpmfmpAfTxWse+bzLlsdF+UVsXDeXC7/3RmsXHc8msTZEYWl2j0p+KMUFDNtG2pMUYoGR7aTbUmKMUARFa4LxHL5ur3BzwrbB+HFd9IdiM56KCTXm07GSR5CcliST9allRICK4v4kXG20kiz/yyVfruYn/ANlrtTXnXxQk2vEuCGd2PJ6hQACPQZzTjuKXY8/k5JpHX5Pwp+MtTpBweK0QmVxSik70tOxJYV/3IFQxz28V4hnjWRQclSAc1BdXiW8OW59vWsGS7mllZo5AFzjGAR9Oe9CQN6HWzarowKrbiWE9vLfBX6AjH5UxtXFxA8Ek3nqTwX68dCD1B/EiuOvzsBaU5A6nPJP4VlHUJRJ8rkjPUk8/Wq2IULnZDVFsbq6VWbbc2bIV9Gz2Pf1B/CtHwbdkQyvI5CIGOfQv6f8AfJrzp72WQfNir1pqhisfsgzhmLNj3GP5UiuTQ9Bn1h76aVYtotoSPmkYLGAOm5j19h6mnx66qu6pqO1No3T7NqsfReNxH5V561/JMqI4kdE5SNM4+uB3qxb6hcG4DLHOmBgAgcfQYODTRDTPVNGurmbBkdGTs7sM/kSTXRQbiMuzE/WvGY9RkRsyXCDP/PUED9D/AErc07xbcWYVZUWO3U5ZklPIx2BOD+VUxHqIxTs1gaH4h07U0/cXgkYdQyFCK2Q3vUgTZpc1Duo3UCJt1Gah3UbqAJt1Gah3j1FKGpgSg0uaizS7qAJM0E1HmjNAD800kDn0pM0hPHWgD6d1VsRLGP4jk/QVnYq1fN5l02Oi/KKiCisTZEW2jbU2zNG3FFhkGKMVNsFIVosFyLFJipSKQiiwzN16TydHun/6ZlR+PFeekV2njeXy9NjhB5lk/Qc/4Vxh6VEikRNXk/xHl364Is5EcQJ+rEt/7MK9Uvc/ZZQrbGKkBvQnjNeQ+O3WTxNdshyu7C/QcD9AKqGwm7swUX5qZMCZVQdSamjHNJbrv1BM9F5/KtERN6EV7EIruRF+6Dx9KjdwkR4UcZyRyfxqxrjrE3nN024P4HH+FcdqWptOxXLLH/FjqR6ChbCLU6i7lMsznykbaoUglj/dH9T2p00KWtsHlwgXg7f0Rf6mm6bnKM8aeaRthiJwqgnv/j9TWxp/hjWPFF0fsMZWziO03TqQhP8AER65PYdgKJSUVdlwpubsjibyWe8mwo2oTgKB19P/ANVQjS7ouQImxnrjive7L4cafp1v5rqZbjHDNzg+w7VtWngm3liiWSEYUAcLXPLExtc7oYGbdj56h8PXbx52EcZpv9lSwffgJ/A19QweBLQJkx/pWTrfw+t5CfJUjIqFios0ll8+h89IkcYG62Ygdj0/nUi3UKkBEMeepMn9AK9U1D4c+SG/d5J5ziuev/BDbv8AVgD2Wto14vqc0sHUW6OQN4HwhcMOwVj/ACNI8ULREBduTnbt4J/DvV7VfBl7EGa3GcfwkVzcovtPmMcqshHBVhwa1jNS2MJUXHdG1aXk1tMGhWPjgEcMv5//AFq9H8I649zbBLkjAOA2MbT6H0ry+3nt5olO9Vk74JyD/n3rb0q5kibdGwV+hb1How7/AFqjBxPXc0ZrltNa/uUC744nUA7WLEEdiCOCKt/Z9UH/AC0gP/A2qLvsHKjdzRk4rD8rVhwHiP8A20b/AApPL1bPBj/7+n/Ci77C5V3NkKd/PrU69KwQurhuBHj/AK7H/Cn7tYz91Me03/1qq77D5V3NzNLmsLfrI6Kv/f0f4UeZrQOdg/7+j/Ci77C5fM3c0ZrC87Wf+eY/7+CgTawORHyP9taLvsHL5m6TTWPFYxudax/q1491prT6yeigH6r/AIU+Zhyn1mB3pcDNOxRisyxKTFOoxQMbimkVJijFAyIik21LtoxQI4fx3Nu1CGAHiKPJ+rH/AAArnDWl4hn+06zdS5yPMKj6Dj+lZx61kzRbFTUJBFaySdAqkn6Dn+leG6jO1zdyTN1Y/pXs3itxDod3KQSREwH1b5f614m/LE1cdhLcdEOCan0mPfcux6blX8z/APWqJBhCa0NGXZarKf4pGY/QDH+NaxMqrOU8bzTwTyRRxqg3cnfnd6Zx+PFcnaB5bld2Tzn61Z1iRri/mw7YL5wTXRfD3w1JrmtQwlGEII3sO9TKSirs2pU3J2R03wx8CS+IL37ffoyWA4AHBkA7D2Pc17va6Xb2dskMMKRxooVFVcBRVzw5pMFhZRwQxKiIoVVHQCtdbUORkV5VSo6krnv0KEaMbLc5yWyEpAK9SP51tWVipAwvFaUVkpcEqMDvir9vbqi4AH5UuW5q5pGetsFXBFQvZozcqK2niBFRpCAeafILnMG+0qOVMFR+VczqXh1CzELj8K9EkiWqlxApHSpcWilNM8nvfD5JxszXJ+K/Adtq9oyMhimX7jgcivdptPRxnAqhcaShG4LgjrWsHJaoyqRhJWZ8Ua/o19oGrvZ3aFJEOVPZh6j2rR0y6c7GMahWOCRnII6GvoD4t+CYda0KWeKJftcA3RN3I7ivnCFWgldWVwy5yAeRg/zr0KU+ZHiYij7OXkekeFr/ADMkEjAEnKnOAa63ivPvBd+rO1u+yVHI+cn+fv0rvVbgCtTiZJxS1Huo3UySTNGai30u+mBLmjNRbqN1AyTNGaj3Um6gRJmkzTC1JuoGfV+0CginUYrI0GYpMVJigCgBmKMVJjikIoGRkVBezC2tJpz0jRm/IVZIrF8ZTeToUwzzKVj/ADPP6ChgeeuSxLHqeTTDUhFNIrFlnKfEm7Nv4feEEDzpEX37n+leT45r0D4qTEG2tyVyzvJgf3QFVc+/DVwirk1qloTHqxr5WBj/ALJrY8OvCvhmeaUkNHvXIOCB1OPzrMkTMTfQ1b0HB0S6iwCTvIHr8orRbGdTc86jga+1MhGlcu+AXbca+jfhH4djsdNSUxgMRya8Z+HmmfbdaG8E45/Emvp/w7aC006KPAG1e1cOKl0PXwEPtGxaxKqjAq0gxWc2oW0LiN5VDHtnmtG2kSRQykEVyKLPT5kTxnFSF8UzcqjOaZIykcGrSYtGTB8jg0xpCtMicDgmkkOTVk2EknPoaZvyKQqfSgjFRItRFpHUFabnmmzy7U4qkzNoxdbjR0ZG5Ugg18o/FLSl0vxNcPBxHIxPTv3r6p1OQsr814L8ZbMPI82xSO5x0reg/eOPGRvA4HwZN/xNYVVSxJUMDJt//X0H5V6nuryvwOrPrsMRSIgHd8y56eh616jmu08WW5JmjNMzS1RA7NJnmkzSZoAdmjdTc0hNAD92aTdTN1NLUDJC1JvqPOaRnANAH1/ijFOxxS4rI0GgUoFOoNADTTSKfikoAjNcn8QZvktLYdy0h/kP611x6VwPjWbzdddM5EKKn49T/OlLYaMAimkVKRUciSshWFQ0rcIDwCx4GfxqCrnlXxMlWTXxGo4jhQH6nLH/ANCFcwo4rX8TyNPrt4S27ZM0YI77Plz/AOO1nmPamTgD1NaijsNCZjb6UuioTYai4BYwx/d9QcZ6e1WrWIMD8y/nTLezlCzRW8pXzychWwCBnr+tVHQiauafwdsFk1YKUHPPFe0a7ef2fp58r75XjHb3ryX4PPcJqkktjZSX2yMbiGEapnplm/oK9B1p9VvphbGCztyeu2ZnP4naBXDWV6mp6+Gly07HGaprt1A7OqZYnsxzVKD4hajbOF3uoB6MevtmuvPh6eKMmY6dLxzu34Nczr+jxlGDrpoOP+Wcrj+Yqoyi9BvnWp0Oi/EcXI2XRIQYOR97HfNdEfFFtM37qTGDgZPWvBTZyWdwWinQDPTdWlBqVzCoLgYHfPFKdN9DWjiV9o9wh1oy6jDEJMgKWbn8qutrSR6hHEx6gkivIfCeq3U1888hbyYkwOOpNWdY8SCK9RxnIBHWseWSdjtU4Ncx62+tRmTAKqv1qM6/YggPcICRnrXhmpeKblgdjuW9BmuYvdZ1W6frJgHPQ1pGm3uYVMTCOx9MjxHpRJUXUZI9GFNl1e0cjbMCG6Gvmy1m1HO7bIxx1PNdNpWq31sgWRnKjqp7VfsVY5frN3seu37ho2weteO/Elv3kqMcr0I7EV6J4d1D+0bEqT8y+p5xXC/FG3VF39CeDUUlapZl4pqVG6POPA9si66W6mNWIP6Z/Wu9zXK+D7cC8mmx0Xbx711FejY8GTuPzRmm80YNVYkcT70maTBpKVgHbqaWpGzTT0osApao2koYntUUnFFgH+ZimF+c1EWppc0WA+1RRilorE1CkpaMUAIaQ0ppKAGt0rzDU5jc6jczk/6yVm/XivRtVm+z6bcz/wByJiPrjivM8cCpkNDMU+EvExuEOPs6NOT6BFLE/pRioNdlFp4M8Q3fO4WJgQ+8rqn8s0Jag3oeIBGkw7cs/wAzfU8mvRfgPo8WoePYGmiSSK2t5ZmV1DDptHB92rg415r239mqyxc6xqBhlcLFFApQA4JJY/yFbQWopu0T1yLRdNICf2fZZPQfZ0/wqPVvB+h6ppt3YvptpF58TRiWKBUdCRgMpAyCK1wQuG8icFQf4PXHvXnvxO1xYNf0zSZxKkVxGSCSVxIScZwfQYz2qq1VQjcnD0XWnyI8V+HFvc6HcajpYtmUx3bxyMw5BQ7cfpXW3MrQbp3UnAz061vpFLcvNNcSyTyGQhXkOW2DgAnvjHU0n2ZM4ZQfY141Wac7nu0Y8seVnlPinX9TvHaGBXhXHZTxXn+pT3kN0FlmErk/71fQ+p6NBcoVWNEJ7gc1yd/4Jt5JN8vlSd/njBP51vTrQXQyqUKs9meVRW80tr57Mud2MCtbw/p09xKpCnYxxmu5GiWUEiQrFG7A4VQoAqPxjb3un6XFJZ+XG8j+VsVcM7MMKB6c9fbNW6qk7II4eUI3kZXhjwlYalZ3N/dXlzBHLdSrbR27bAI1Yrk+uSDgelY/irw//ZUsEkN7cTxSS+Wwkbn16j6V694L8NR2Ph6FLmMNKYwoB6KMfzPWuH+KljNpwWWOJpLczRs2ORHhgc/TGaiNVue5vVoxjR21PNZJGU46D2qzZ3dvAwM+z6M2M11K+GYr2GKaUPBIF/1fBHXrWT4k8LXErh7RowoUKyt8p47+lbqUZaXOCUZQXMkX7LU9CnUJJaQkn+8o5/GtWPTdEvIf9HjeAnr5UrAH8M4ri7Xw/dRr5bIpc9NrZ/lXTaJo2rWwBbBUHpnnFZTjy6xZtCpzq0om3oVlqVkzfYr6N8dI7qLcD7blwR+tch8StRnnvo7G+sxYXGN2TKHicdirY/mBzXe2TPbxlmBY1xHiu3bxJ440TTVUpJO6wLzz80g5+gAJ/CijLmmLErlpOx1/wu+Er6t4Uh1mTU/sj3ZLCNrckgKSvPI7g11J+DEgHGvwn62p/wDiq9U09LSxsobOGSJY4UCKAwHAqSS5i/56x/8AfQr11BHiXZ5L/wAKbn6Lr1sT727f40H4MX2ONcsvxhcV6uJYic+bH/30KkWVTx5sZ/4GKrkQrnjsnwd1MNtTV9Pb6q4/pSN8HdbH3dR0wj/ef/CvaYghJzJH/wB9ipSYwOZY/wDvsUuVDuzwxvg7r54F5ph/7aN/8TWR4h+GGvaPpst/cT6eYo8A7ZiSSTgADHvX0R5kQ6SR/wDfQrJ8U2ker6Hd6cJ4UeZMI7HIVgQQT7cUuRDufLcthJHci33BpDyQOwo1Ow8qzMoH3SM10j6W+nX91FcOktwsrK7r0ODjj2qLU4BNp88YHJjOPqOazaKOGY1Wu7hLeMySHAH61NM6xoXYgADJrECvql3uORAn+fzqQR960opKUVgahQaKKYCUhpaSiwGH40m8rQ2TPMsip/U/yrhcV1Pj+Y77S2zwA0h/kP61y1Q9xoO1YnxGme38CtFkYvdQiT3xGrOf1K1t965b4wT7LDw9YDPzxT3bD/ecIv6IaqImefwryK+mv2dbBbbwE10V+a7u3fPqFwg/ka+abUDzBnp3r67+FlkdP+HuiW5GGNqsjfV/mP8AOtOhNRnTY9q8d+KNul/8QrIFR5dmnmSE9AFAI/U17HXlfxLijTVr6UL+8kWNcjsNoJrmxX8M6ssaVf5FG0CtArqchsn65NPeNT2qLT/3dlEn91AKkkYnpXntHsKJUvUfYRH1rnruw1W6fZG+0Z5JNdURkcim/aobdSzQO2B/CKmxtFtbGXovh2KyBnuD5sxHU1eh0yG5uklmQOkZ3KpHBbsT9KTTtWGp3MqJAYYYV+YsepParMur6baEIZ1LfWtIrqyrPqaRgIjBxxWH4j0mG+tJI5Y1cFSCCOCD2NLeeLoN3loYwB6elFpr9tc5jkK/N3qrRvuV76jqjkJNP/0cCBNmwBVUdscYqpb3cAY299CFdTg5FdVqqxWUwuo2Bt3Pzkc4PY0XWmWd6olKI2e4rOV09TOyXQxra3sHOYkXPsKuCxyAEXirkGlw2+PLXAFX4ykYHSouyWl0MZtMURFnH51hRWtvZeJv7T3eQUtGTzUUbwN2cBuq5HcYNdbfXAKlQOtczfeXNPcR9XEJCj14NbQbimzJwU5JNHY/CfXm1z+1AkRS0tzGItzFiSc5PP0ruxEWPCg/hXnvwBtVg8NXrFfmadMn8DXpyFVAwK9rCybpJng42KjXkkJBbLkblX8qtrFCg4RcfSqrSknApVk9c10HKSyMnZF/75FRMyngov8A3yKCxPQGoyD6GgCOUJjiNP8AvkVWaNT/AMs0/wC+RVplHPXH0qJmC8rQM8Y+Itp9m8X3mBtSbbKv/AlGf1Brm2IA56d6734xwhdQ0+8x/rImjb6q2R+jV5vdzF8wxcs3X2rN7lI8y1rzLjU5dPh4WOQqx+hq5bxJBEI4xgD9ava5aJY6tNtHM2JCfUkf4iqJasxn28DzTqaop1c5qLRRSUCA0h6UtJkZGenegZwPjKbzdelUdIlWP9Mn+dY9S6hObm/uLg/8tJWb8M1DU3GKoJPA57Vw3xqlUeOfsCH5dPsbe2A9Dt3H9Wr0TRYDc6rawAZ8yZFx7ZGa8e8e341Lxxrl6DlZL6UKf9lTtH6LVQ2F1KemxtPcpCn3pGCD6k4/rX2rZRfZLGC2SI7YYljABHYAf0r5D+Gdmb/xzotpgkPexE8Z4Vtx/Ra+xPetDOoNDP8A88iP+BCvOvGqyjWrxJYw8cm089QNowf0Nd9PexxHAWRj7ITXA+MriRtQlaUsN4HlhhjKjsPxzXPiYvkOnAO1X5GIBhQBU0YwOagRs0ryhRjNeez3Idi3vjCnOOKy9Sug37qIZz1ps9xgH5uabp8IkmMznp0pps6YxS1Ob8UTz6NprG3yrzH5j714nd3fjG91d5obx44w+VGARj3r6V1Cwtb5PLuYklT0YZqvFoWnRLiO2jjHThBxW0LIzrO6Wp4ZLqmoRxhp94cfewvBrDuvGHiCG/UWturRKeSzHJ/wr6Bn8N6fLcMrRREH15BrF1fwJo1wzf6MsbD+NMg5q0kt0ZNzbVmYeh+ILrU9Ee2cEyMo4645FdboJkMABZge4zVXw74RtdLLGORnz/eNaxthbOSvANc8kkdkdUXkEo6vn6025YBfeq63W37xps0yyDINQZTVincykk1lWsTPr8LdiOfpWhcVNpcEryAQxBml/dmQnlM+nuc1qldWMObldzvvA+jJpPhu3hSUq8/7+QBh1boPwXFbyRjGTPJgf7YqpcXEcQEarKAAFH7gdh9KhMyOuMSj/tkBn9K92EVGKSPl5zc5OT3ZclwGG2aT/vupoUXHzPIfrIazFZAdxSTHoIv/AK1NuJ4CgBWcY6fuSM/pV2JNWTyezvn/AK6N/jVabyh6n/gR/wAaw57i2UFmEwHujD+lU5L204BWQd+d2apRE2bkvl5+5n65qq5jLjEY468VizXunrh3BHYfephvbZwRHa3EnOMeUwH5mnYCn8ULaObw2kyLsaC4UkgYyGBH88V5bHGkTsy5JPUmuy8d6ukNudPEECNIUyFzuVc9Du6dsY964tnG7BNYTauaI53xrHiS3m9QUJ/UfzrnA4rqfGA3aWXyP3bhv6VwV7eiFNwPT9azYz75zxRmkHSjtXOaDiaKbRQAtU9ZuPs2lXU+cFImI+uMD+dWiawfG8/l6IYweZpVX8Byf5UnsBwo4AHpS5puaM1JRp6DOtpdyX7kBbS3muD/AMAQn+eK+fVkaT945+dzub6nk/zr2rxBdfYvAviOcDDNZCBT7ySKuPyzXiANaR2Et2enfs727XHxNsXABEEM0ze3ybR+rV9Nz3A8s/KcjsK+Yv2f9c0vQfFF7e6nP5IeyMUREZfJLgnp7Cvf9J8Q6TrMwi0+/t5JW5CMWR2+gYc/hWsbdTKoncvTXG+8EYXCiIuw9ywA/k1QalZw6hYyQT26S/KSmVyVbHBHoc1l6r4g0jSb+7F7dxecvloIkJdsBc54GOrd6wL74u+GrHIMNy79lLKM/kTVuUbWZKTvdGZESYFY9cc/WoJ5MA80mn30V9a/aoP9VMS6D0BOcVWuHy5FeHNWbR9PQd0mVrqcqasQXqpGEBrJ1SQrIorl9a12W2YQW0TyzvwqIMsTThG50TnY9Fgv4yPmkA5qHUPE+j2EYS5u13H7yJyRXl32HxpeR+atibZGPCtOAx+oGcU1PD2s284e+0i5uVPV4nEgHrkdTW6iyElLZHop8SaUI21KKWRowPL+539cU6x8Q6bqJIguV34+4xwa881Bkt7d7G2tWhBUs6+WwPHtisA2mqhftVnYX8sYON4gYY9x3P5U7X6lTXJ0PaDqMY4DAHtzUNxqClcE9a8bn8Qa3abfOhuumAWiYH+Va+heK0vQY5SUkXg7sgg/SolTZmq8U9D0F59wPNMS4KtjNZVncmQ9eCKneTDAe9YG0ndGhLJlc5ra8Hyie5SK33OySgzFQSEAOecfyrnZyzIkaAl3IRQPUnAr1XT/AD7SyisobRkWJAuQYxuIGM9etduFo8+r6HkY3Eez91bsszypK5K25OP+mZ/wqtJKE/5dsf8AAVH8zS3InCZMExIH/PZP8aynnmR+bOQ/WRP8a9ZK54hrxTIR80Bz7Ff8DVe9898CO0jyOheY/wBBUEF/Mo/48j/3+QUr3lwWz9j/API61fKFzPurK5OQRbIGPzYVmP6mqraert880vXooCj9K0bm5ueD9lX8Zh/hVWSa6A3m0iVR1JuRgfpVbCIU06EEkNMD1JD4/UVykvizT4p76GFXkZY1W3WaRsvIWwc/N93HzZ7AE1B4w8e3Gk3dxp0dmIrlEAJMqsQSQdw4x931HfNeO6hdyPc3EoyDNuPJ6A9uK56lWz0KSNzxvqUN1rD3CXEUrbgyNbsTGR7Z5/A1YlmVmWQEtnB5/OuFefbIQB0AH/166fT5xPp8Mo7rg/hxWMdWWixrbR3Ol3Ee0ZaNsfXFeXXbI6HAb2Gehr0xjxXmmpRmK9mgKgFJGH61fKFz9De1GaTPFGa5kaC5pKTNITQAE1yPxAnPm2lvnorOfx4/oa6wsK8+8ZT+dr0q54iVYx+Ayf51MmCMrNKDzUQanJy1JFGV8Tna28BRx5/5CGoIuP8AYiQt/wChN+leUiNff869G+NM6xW2hWLuB5du85B9ZH4/Ra83WaP++K2sZpu5q2+g3dxpTaokDPbRuULq4ypAGTjr3HIq9YXmpWsarBdSEL03Nux+dVbGbNsiBiy5yBnjPrU4liib55EUntmpvqWr21H3El9dDE1xJj+6G2j9KZpujT312ILS1kml9B/Pmp43RjuRlYfWnGYRsHD4weoOKaE79D0DQbO60fT4bK7UI4BIUHOBnpmrUzDduNefad4tk/t5NImM8pCZDuTiMkZ6HseOa6v+0A8QyRmuHE03Gd+57GBq89P0E1dvNISPljwKTRtJhtZHuZArzvxvI5AqFJPMmznp0qxLdmNcVz3aPSSTdzRkuoLdOHCmmRa4zLseaMjPA2VyOsXhYsQxFc82qOkpG/AwRz+VbQ5n1JnWVPoepjVoQcs9vn/dOarSanaySEeZGfYCvHH1y5LY8xgPrViw1V2lA3HPua05JLqZvHJ6JHqsk1u/ZWHpiuM8XeGIryX+0LMiG5BySoxu9jT9Nvzs5bNaa3LvGeaxcpJltQnHYo+HVkjtFNwV808EZzjFapYZyaxXm8qbA4yane7AQEnmos2yXNJGzFLKZ47iPJFs6SH/AL6GK9A/tW4ZiROnX0FcXptoR4WmukdJPMjMjlGB245x+GK32tLkIrDOCARXu4anyQSPmcVV9pUbNo6tKU271J/3RVW41CVyPmH/AHyKzo7S5/u/oKebaQA/IDXQlY5yWTUJx0YD6LSLqFw38Y/KqogkccR05LacD/VH86buBaF1cFRuYE/Suf8AHV7d/wBjDbIQnmAMAvB9M/iK1rgSQQNNN+7jQZZmfAA9yTXmOt+IbO5kkjbUAf3mMYOHGeD6VlOVkMyLmxhuLh7mYzPK3VmkJzVGbR7N5OUkBPT94atyazpitte9iBH1/wAKiOtaV0+3R/kf8Kw0YakEfh/T85Mch/4Ga2NK0mzjtTGiOFDE/e9az11vSSOL+L9f8Kv6VrOmSu6R3sTHbnAz/hT0HqWm0u05+V/++qwNU8KaRLevM8Mm5+TiQgZrom1OwHW6T8j/AIVm6prekRBJJL6JQcjkH/CmLU+r80E03Pemlua5UdFx5NNJ6n0GT7VyXjzx7oPhG3DX8sk9y2RHawDLsR1yeijkdfyrwPxX418WfESee0ieCz0+2je4e3W4WGFI16tLI5G48gAHqTwK1jTbJc0j6Sn8SeHoFdptf0pFTJbN5GcY68ZryLxH440C2vpZry9ljM7NIha2lAkXPVSVAI6dK8Y0+1sprWC81HT5orMyuhvgzLDJ0+XcqNtYdjgg5wRnFdNaWNjer9qt7S8uYZRiKUxm/VgOMLJuR1PHKleK6oYRS+K4Rbn8LR2Gm+N7HUpXGm2V3eRoMGSNowA2MhTlhtJ7E8Z44zVuz8X6ddQ77SK8mk+dSiwHKlSobP8AullzjOMiuI1MaRbxb5dIjinjCokjWhtGiG7IIeWQsSCc4A575FW/Enhux0PT1sbq8W6FzG13atpkqQzTTEkv5rEAKoX5uMKFjy3YV2UsFh5O1mc1eVakt1/X6kPxS16bV9YhujZ7LZIYo1eFzPuRTtbywqgMw5JBIweDWBFHLcafJqdtpWoDT0u3tjczSIighd+GB5BC4LdQCQOpxUVrpUN94Ovtel1KYeRcYPl3CkyEkKH80KCTlsEkHqR6VkJq+oaXpT6aq3+nKGWWHFw5ORJ+92t0XJX+EdRznitamDpQs5KyepzQxE3dReq0LN1rUslytro95bthCV87KB8Ak4YgDoM44zimapqzvGk2m3dukaRjzWuLyBi0ncIEAYj6j8ay7u9W+tptT+w2lo9tdRzB4kIDtI5BRiTwDgkdhg8CsW0hj8qaSa8htYkZgrSklmxwAEUFj78YFc0qFOK91XubRqze7OnsvEt3ZJPJqV3Jas1v5lp/oQljmbsCQwwpH8S5x3FWvDfiDWtTlS6v3C6fLKY0it4x50pIPESj5mI9c4Hc1x+lWmp+Jbuz0K2WaWJN0jlCWO1cAgcduMfX0rsLe4a008W2nJHZN5cttNcI4LEuuBHuzgLHHvkYLxnAJJq6eFg3drQmeIklZbk97cyWSIHaCKa1so5QBIrbQo+QyOMiSU54AyFyABnJHd6BrKalplvewt8k6Bj7N0I/PNeUTXG6C9dItkMLJJ5RXDCIFI8H0wgUf8CNHwc8QGO4uNEuHOwuzwEnoc8r+XNcGZJTd0ejlk+R2fU990eRJW2seRV+8tXdMoMiuTtbhoyHB6V1lhqEc1qpBycV4clY+jpyuYGpabMyn3rjdVsZ45dmCSfQV6TeTLyWIwawdTMEi7cKfeqpysOrTU0cB/Z0jON5K574p8em3ELLIp3rn+GuikhXd079auWMERYBsGt3UZzLDoTRrGXyA0ikZrYWIxx81at2iWIDIGBWVq9+iHYh5rm1kzpbUUZ9+4WUsDz/ACpLH/SWYvkxrwfc1l6pexQQyTzSqiIpZ2J6AV5t4m8U6/pt7DqWl313a21woQxHoCvOCpGOQQeld2Goubv2PKxtfljyp6s9st4hby+ZaTz2++IxSqsnyyKezDoevWuu0zxbuVILwCJkAUOB8pxxz6V4r4T8bXupWLNeaaZGiiEjyW3Jwc4JQZIzg/8A1q39O8U6JebVF6sUh/gnHlnPpk8frXoNTp62PHTUtLntEV+zgEEEHuKma5YqQMZx6V5roWrTWcpSK5jdC2fLZgQfpXZ6ZrNjdOsLMkU7dI3cc/Q960jUTBxaNVJHCcsM/SladwOSPypjxseit+VZet3S2dm8klzHbsRhC/c+3rVN9RGX441CK5tDp5mk+8RKijGRivO5NFsQ+N0wPrv/APrVpXeoRmVpJbmJixySZByaqPdQbvmuIskZ/wBYOn51zS956hqZdz4c0928xnnJ9N4/wqMeF9OZV+a54/6af/WrWNzb8A3EP/fxf8aebm2VQftMJB6fvB/jUtILsy08K6aoOJLjn/bH+FXLHw/p8M6lGmHBH3x/hVlbqD/nvD/38FS29zCXBE0RAP8AfH+NGgXYp0KzPV58+oYf4Vnal4S024jw0lyADnhx/hXQm4gxkzR4/wB8UySe3KEC4h6f89BTHqfR7yKiszsFVQSSTgADvXmXib4kiaWe30OK6NnGreZqCWxZfTIZiqKvbOSc46VjfG/xZq08s3hrQY1MEQzf3LMoBcDPlDdwcDBIAJzgYrxK51FroCIyzalLKyCdnZiZMMNsSA8hc+wycYAAGd8JRimpzRNao2uWLOl8QTaffXKT3NnqSxRxDYJnSZZFLb2ZnjcmMsejAYA6nqa5rRdWufDHiIa5ZWdl5lvK32dL4LcooYHawzgPgcBx3xWhqF9ZX3iFry6iYWdkmy4WCZpfs7NJgRq/BYruPAIBIYDgVW1uxFh9jvBPc2ttfBbiOSCKRmSEgjc8f3HLEBsBsqDtO6vUq01VTa6HDTk6dvMx9e1PV7kyTXU1xFFqMj3LRophglJc5ZUGF27gRwMZHtSWkPnaz4bst7R5W3Z2BIK+ZK0hPt8pH5VV8Q3fnSwwR3rXlpaRCG1Ygqqx5LYVT90bmY49Sa0dL8S2sVtC19p8VxdWdgbazbyFyj4IWUyZDDAYjbgjgEYrno8sZNTe36G9S7inFGLqE51HULi8mkLG5ndzLJliAzk5PfgHp7VoeGtR0nTLrU7XWLWTUJZYZrT7ULshfLxwBwSAxA+bPAI461jwjECkZ2j5QccZA6Z9aySwErqWAOTgZ5rKnWcJcy3LlTU48rOq0qTVprAzaXE91G9otpcR+SswiCnIVlYEKCVVg2Bk55zVGTULKZjdzCaVwgjNpKzoqMB8x3ZzjdkhV9eT2qtpGm6he2d3cWtlNcW9soNwyLkIDkjPtwfXpVlPEVzD4ZGjxWdiG88yPcm3V5pRjAQkg9PUckYFbKd42lp/XQhrX3Saa80FvBUunJDqaXM9wLh5i0eyParKqberqNzHPynmqd0s8mjotpHHax3NtGsqsiDzZNuWBPUqoIbPbOOTUJm0dNIkjW0vpJyuG8yYIIG9FUAl+f7+OOMZ5rW8NaJqGr6lBBqFqHMMarbrsDqC+AEUAgcZyFZgAeoPSqU1a0vLYqnRlOVqa11Oi8G6B/Z9mEuzFJetjfbG62RLana8hlkTO5fkUBE+duQcir8sMy3TXqW2nXdwzNMi3AaK32DMghghVR8uQCXk2hyoABBybsOjaZoUtrFe6bLqd+XBghE0CQWzNuH7yWNRjcoPybTkgYJJxV8zWJ12zu1t3ihDRTSIspnaZzI3JZgPvHbngYAxiuqvN0YRtpql94svwkMXVqRk27RbVra2/Q830dGuriK4uXaT+03ktj8vD+aGDMT2IYq2BXD6VLPHr0lx5jCUyly/fcTnP5mu00gz3FzJMbg77WRzaxg4TzXZj8o6AZGePaud1rT20/W5VUxyIgjy0Ywo3ICOO3XH1rysZD3E0bYSVp2PV/DfiKO6tUjuCEmUYYE1rDXRp7blfMTeh6V5jZRtNArRvskA+RvX2NQ3urXkAa3nVge+a8V0k2e4q8kj0y/8YRlPkkXafXmqsmsqVSbzUEcg4BbnPf8AWvI7vUJRIy7jtAyee2P/AK9KNUuDosqlx8k+4YHI3AD8sD9KtUY2IeLne561LrkCKA8yD8etNj1+ONfM8wFQQPQc15Lb3ck8okLE4c/LnOQFzWnbXUs/2W2cYEjgMCeMDIyfzzQqKCWMk9j1C68UKsrwRnewJHBzVdr/AChkkfcx/SuAsb3z53kRSpY/Ln0/xrTvr42mneY/B2/KDUumlsNV5NXZifEjXGury30SCTCu6tOQevPC/wCfaup8VaZHqnhLTZQCwuLMIGYch4x8hbHQ/eU/QV5EHn1HX2kBLuW4Ocfqen1r0zw3PqMs6aJ50UdvD50zrOhOF2EMvBzycEAdGwa9nAKMYtS2Z5OJnKpKy1ZzmiXEkdnPDHI8d6zD5BKqhCvy8A8Z2ADgg1LFcyeatvdxMWQgcrh8f3SOMjH0PvU+o79D8ZxvKbWKKdlEiOCVLAAhioB4YYwcYPNdNb6DazxWyW0kN5At35kyTS7kWFto27xh1Awx+YKOetdD96XK+hMcNJ01Upq/fyK9xqf9l64P7Ge4sdMleGeOGaUSgI20k7ioyuM9gccHOK9c17ToI7wW9wscSSEvBvkXcyHlWVc7unpkV4r4qtdRhvv+JvFLZyzBpRO6gRGMHaCMdAMAALngjAqr4fhtJ72e3vNY/s9Vt0EF4dzB5yQEHABC/e4JGMCtIUou8JRv+Biq3s/e3PqDwF4i0qXRpLK61WOe9tZnjm86YK691BBOeh6965/4qaffXN3DeRloIYV2xEjPJ6njpXk9vPp9ndzGCZtIlaEW8t/Pbi+IKk5Kkj5Xck7mPZRzk8Ysfi6zsJrmWGyj1W3nt1hk/tCaY+USTvCMWyHYBcsPQ4xUVcEoOzloTCvzK9jobzw1LKMC8hz/ALhpi+GbghQ17ExUYyYz+VZvhzX5V1Macun36RyE/ZrG3mVVjYqTyJuSOhOGXO33rb8Ma1Lf3UunXxtLfUo5hAsDOQZG53cgFV27SSS2P51yPBvTl1LVfuU5/Cbuq4uIFZQMERnB/Cp5/DMk8KqbmBdoxkRn866Syze6SNWtYp5dPaYwC6ELiIyDqu4jGfanAdq5nCzszXnZyA8Hy4x9thx/1yNW7DwzNbuC15Ey55AjIrpgPanAUuVBzszm8OvIMi5jAI4+Q1F/wijlQv2yPA/6ZmultjmEe3FS0bD5mcTqGn6pr2/Ud5nMsrrB5i7GdRuYsP4VAxyM5JJ69aydIvLRtMurm/1a2F7AAbW2uLDznmPBGJeGXn34xmuntr+2h1K4tGsrvS47gvJpyX978lrbYfCIzcFmYnJOAMdzXOXlvotlaBbGWLWbia5ZZIX3xFIQD5ZjbAzIe5GQMgYIr2YQUbSj21v3OCUr3T2K0t5/wkF9b2skl3b3M0uIwjNPCznuEYhgT67m/Crfje/kudDtrFbaazTTFW1ME+0uTtznI+ZGxtJAIwWNZnhue4j1ixgiMts/2lRJJb22+4xn5wBjceARtGPeuy8SXXgTXfFmrT2c9++jPaLNDJNE6zx3TSoCm3+MGJGAA6KpPbNVGpzU2vtMUoWmn0R5leSi4zMqRQ7xuEaHheOnP9afrMGn28sH9maj9uikt0kdiADG56occZHtWxealeadoml2thdT2kUqzXTLC5XdulKJkjk4WPAz05rCN/Hd3LHVBNKxP+vh2iT/AIECMP8AU4PvXLNRV49TeDb16G9ceMtauvANn4MkkgGk2dx9ojRYgHL84y3/AAI/XvmsHTdeax0TWNEbT7S4h1Eoxllj/eQOudrI3UdTx3rW8Oabol/qcNnc6texLLu+ZLJf3YVWYliXIxhT0BrInfT7ITTaddyXEjTDyvPtwBLAQdyvGcrkMFPX+Ifg/ZytzNr8BqabcUje8FQ+RocuozXkMEX9oIyRySYNx5UExKqP4sM6g9hzXP3ekanpIsru+tZbSF4vPjllGAyqoORjvyuAeeRTo9Zvm1S1v98fm25UQKsSiONQeFCAbdvJyMc5OafresXWu40gixtVIwnzsibhjCkuxCKBnAGBW/NTnFR1utvMycZxk30e5ZvRPceF7dJJkW70u2Fw8zxyNI3mkNHEXVSBtUAguRy+BXSfD1m0nwrc69GwW5hjkvEYqDmTIiiPv877ufSsDWpVg8RzQWWpC8tZ7mJpVgdhGwOB5ZHRsDjPIrrr2e3svBd4l1ZhnuWtYUiWQoqtl5myRzgbRkDqSKzrJOqtdm/w2/Q9HA3hhq1T+6l/4E7P8LnJ3erajI6H7XKhEZiRIP3YKlixUKuM5Ykkdya76S2ayn0vTyjJLawWUEqngq6qhYY9iT+Vc34e0nV9U06e/wBOax020guIreSSJvLld3ZQEVvmcthgeWAPautW50+W81PWtTujFb24mu/LXmSc7iFRD0zyOTx+dZ4hSvBPq19yOrJHCKxFXpGDXzdrHjc2pvp0LXSOdiv5oQsdrNggEj1AY1zeiXrzxyWsjHcFLKc9QCCQfXpn8Kb4qvFaRbONsrH97nPNUtA3HVINgyd3P0xz+lcs5OTscEUo6o9I8Jzh0WN+Qeh9a6DVtHivrUBhhgPlcDkex9q57wzFBHCsSuWJJJ4xt54Ga7K2uDAgE3zIeA+OPxrzKl4ysj1qVpw1PLtd0y6t5hlTjYAcd8cfyqqu/wCyfZyrrnk8dSDxn8M/nXqupWVlqC/wj6etYk2hxRjG0EDkEc01UIlRdziraGb7R0ONjBSFxg4Na9hZXFxcl41xg72yOxIJ/wA+9dBbadD0ZcDpg1p2Qt7OBwyjaQFOOpyeR+QqvaEukzL07S0t4hJKcvj5ie3sKwPGl3+6ZAeAK6W+u/lOOB2FcB4qnMjFc53HrSh7zKqWjEreDbVp9RKsNrzofJb/AGx8y5+pXb9SK9E0nWhdeK0v3tYx9tgMM6BsK7spw4wBt+YJge3fNed6NrkeipJA1v5n2iLG8HmI5yrgdyCOMnjrzXc2i6Xe6V/adjc+RfOTc20BBKygMSyLx8pQo3JPOAMcg17VFXhyxfqeO58lRTa6lz4ixW1/oquFX+0IY1ZXMRyFTpsK8A9cg5yFyMEHOF4V8R6lDYWUr3Mk4W9dSJGyQu2Lo33l6noa6/WUtp9IkvvsrSqiCQPGfmSJiPwK/MmfTrXC6RdaXp13NYT2f2iEXouYJJIwWaEgAoRuG0naPmGcYOK1jJVEpO21vuOrG0pYevJU778y9HqvzO51Xxtp6fubrT4dRNsHjtbW5gLBJNzAb1+6cZOCvPPAA4HE6xqcD2lgv9n26ziMxXgLOBPtIKSEcbX5YEg+xHrFe6lNF4ibVtPlNpMbiSaHDAtHuJIwSOoB69c8jBqtcWl1dJNcQ2880duN8zpGzBB6sR0/Go55bI56kud80txl1Jayt5jpej/tqr4+hYVo28mLK7ksLufTrFQuUdzIzZ4AwMAsSGOeAPbim2BguNLgtpItPi23vlPPNGNzLImVy3XCsvXoA2TVu80yXSNMvDdqkofT0V4gxBhlaRcF/wDaTGeOMtjp1tRk1dGLkk7FK9dVIto4kuIVAMUtxbfvDGeVJGSMemc47GtSfxHcyWum2qw6cjafu8uaG2RJDkgjJUDBGOoxnvms1726u7NLaWRTHsAGEAPT2/z61v6tr1tP4dSGSa3uZZrmSRrSSyXdB+6VFCy9lB3MAOeg45yQe9pWFJbXVzMm13V9Vu2udQv57l/l3FmwDgYHAwMj1616FoCeIvsIu2hiv9O+zR3AuyxTO7AKKWwWKkkEkbflPzV5rpzWaxXFrPBcy3EkAFt5JwFlLrgsMZYbd2FHUkeleofDf4iWfhm0g0jU7O5Is0lW5W6hDR43lhEF+9nBCgMAAepApUoQqX9oTXlUgl7NevoasDiVA210YjJWRSrL7EHkGrNvE0mQqhj9cY96z9G1CbWry5drqzRZJnkt7SS8ikuRF13EKcnqT3OFAxxXVaTbWqWLm4+yMcB8vnOcHCAg81zYrD+xkrapm1GpzrXdGZCMAiplqID5jjp7VKgNchsjzXVtXsNUvftV7Lrc8gUKNz26hVHZQqgAcnoO9S28cF1ouoXenW1nbGwUToLmNp7iYoN7ESgAR4AyAAAenNZdt4f124uhbQ6LqLSseA1s649yWAAH41YfWmttAutLhtfLuJ4ktLidZ8q8cchbGwDG7Pyls8jtXsQm03Ken+ZxyUWuWGvzLGi67FpPiBNQv4r6K5lkNzd3RCF5EOWKwqPlVHOAXyTt445rL8YXNva63B/ZVk+lwy2iRXEEb5+YnLoHxydpUMR3yD3pugRX50u9MkEGoaRbBpbm0ebEkaYyZI+6MB3B5xyDzWvrMN9rGpXOksIPItb0O88ETb3lkQbJZEycKRgNsAAY5IrV80qVl11Wn6maUVUv8jGvZNJu7PT839zFNb2iQSxfY94DKzkkNvAIO7NYNzaPHm4jPnWxbAmRSFB9GB+6fY/gTXZ2Xhuay1i20e48mPV7kkozwmXyyWZUQI4GD8rFnIO0YwOprFttOkuo5rkTwaffi4a3kt5lEcczBC7Yx8qgAfMGG3JBBGaxlRlPW2prGahpfYPD0Mv2DW72NGxa6eylgPuea6x5Pp8pesGwzLqCWIhilW5lVAHfbtYnAYMPunnryPUGvU9J0aWy8Ms114nOjzzzMipp2wWyeWjM/nbMbtoU7jk4yAM5rhp9CvZfFMtlJbw3V5GH8yNCBHK2wmOTA25VjjOMc9cZNbTws4OCsZQxEZczNa28OaFpPiGMatqc01pHHLM0LWbq/wC7GNj8jncV+UckEdAc1jH7DrGv2lrqN9C9s+7y3htUtPKYcmNlxgKR0OT9etaN5pd7c61qOmQXdtc/YbQOzMyQLChZGfzMsQrA/eyT0rlXkuNM1WSGWG1uFJUtG+2aKQdQQwP15Ug1VRxpzS5LRv5ignOL97Wx0q+FzfwXV1oV9DfWdvcxhgA8ckcbHg/MAGxhgSp7ZrofEotn0+zjkltRI8s90sU8jorLuWFclRk4EbnbxnPXtV3wdrVvqo1LzLyy0fTWFvBbW1zNsjUxqXkK4H0yfQjNSeI7bR47MatawWWuWlhaLbvcgypbFw7sAGLKJD83O0ED64Bh0Ye2vBaW+W/T5HcqzjgOSUvectutktL/ADbM/wAPabdBrLWGvYmtbXfdwQRQeXExUOqkY6Nv243qGb1rlfH3iyystBbRdPmE15IypOyjKxomCFB7ln5PoEHrTvEXxNmbTXtbHStL8qT/AI92a1CtaMAN2wKQpXJO3cCeec4ry4/O5aRd5Y5JJOa5MU4yqLk2X59TbC1pUsNKnbWTV/RbL79WVXJdizHJJyTU1k5iuFcAHB6GrEVkk5PkyqGClvLcEE4GTg9Dx9Ka1uUYHFcnI07kXR6J4bkjmuXVV8sOdyKTkgdcfkRXbW5Ih2kZ4rhvCUY1DSt8+pWumyadB9rhnmUlZQY9iwkjoWaIAZ7t716HoTQajp0F1F9yVM4PVT3B9wa4sdSdOd+jPSwFVTjy9UYGoo8B3RMU9u1Y9zrE8R2yZPvXdanpYkjIwfYiuZl8NtLIQC2K44zXU7JQaehhDXJsnAqzaXE9xy2SffoK2rXwiM52k++K2YfD6wRg7AMCr510J9nJ7nJXUTCIs5JFcRdyJcXb/KrAjapbovPJH4D+ddR4w1qOUvp2nYf5thlU5BJOML6+lczr8LQ3F/GMq32h4cgfd+YgD9MV6GFoytzNHmYmtFy5Uzl9QmE15I6H5M4X6Dir3h3V59MutyySCJgVdVYjgjBx+BP1rMZcHGVOPQ5FLGuTjpmtY3TOZ2Z75pF9Z3/g2AaaZobsQSQShWyhKqCjqSc5bK5U8DH4Vwd1aQ3t0LmKaG1McEsro33flQuAv+8QQB2J9Kp/DHxANOvZLC6k2wThTCSMhZQwxn2ILD8q3/iHpEek3U0tliSz2RyIc7/LbduCMT325PpzXZH3lKS/r+rG1efPTpX3Scfud1+DsvQq6fqV1b6bdWMM8Ytr0KJkaNW3Y6FSRkH3U1WtdRv7WC6tLbUZrS3vV2XKox2yLzwwHJ4J6epqxp+sag9qGmu7ieJlxJHK5dWXvw2QPqOlbGga5P4M1XU7jR9S04vLbS2RkubFpJQjHBKKRhX467sc0/ednFnFZXs0clGyyTxovyxRjCA4yfVj7n9OB2q752tT2/n2z3Tw2wZEk6RoCACC7fLjAAwSeAB2rf8ADN5BaeDL5bfzbZmWQgxxASuyD5CJV+chSY933UGWBySorG1vUbS4mb7RaXMrrtAH2zEYO0ZIXZ8ueuAe9bOmoJPm3IUnJtWNzw9puhy6iumahdjzmtv3L2kJQ+cUDKpdnKEZJGSPxFMGmzaTf6hpFw+hGS6jEa3Fy53Rrk8pkfIT6sAQR1rPTw9qP9k6NqdtbNcQalb3EipCCxjCMyspBOSMYOffHWrOt/2idNt7q5iupbmF3hlSZW8zMjAx8NyVPIBHcEdxVtWjrGz/AEZCd3o9CrpVmPsWq6vNrttpd9YyL9jtjuNzPKCMBNv3ABzvJxkYqXR9P1DV9UtbCBPtd9eSltsr/wCtfljuJPsc881l22nFEaZbi3uUtArXMcbHKDIB5xhl7FlyAT+Nb3i7U9D1DWxd+HNHbR7Dy0WO3MxdgyjBcnsSecDp61ytcuj2NviWh1CXEl7AbK2tBp+oWrPEYrdI4RHIC2I3UABtzfIH9hnB66nh/VLj7a2lalEIrpOExjDAD2JB9QRwa88ie9sGt74RzRCYMYnkiOyVc4bGRh1zweoral8Q6hdyRTTJZu0SKiA2qcKucDcQX4z13VdacK0ddyYQlB6bHp8XarKjFZek3kU4iX7VazM8CTboHJGD1BB+ZWUgqVPQjuCCdVDmvLkrOx0o8r8J+Lr/AMO/bBDuuFmiKLHLIdkUoPyvtPcc8cZzVabxCLqV5dT0bSL2RyS0nkG3kJ9d0RXn8DVKXUvOwuqQG9A4WcPtuEH+/g7h7OD9RV6x8M3GsQTT+Hp11MQ4MkBXyriMHplSdrdDyrGvXU604qMHdLp/wDklGnBuUlZvr/wSJtU0m1tJpbG3vFlfaHs7icy20mDkMdu0tj+64IPrWVpOsz2/im01m4uJDKt6k80gPzN84LdOuRniq99bXFtO9tcwSwSj70UqFGH4Gsx8q+PQ1hOpKWj6G1NRj70T6M8eeKpBPaalolpBd6j5u9tsYY3Fo6DCrkbgAcZxz0JGAa8bu9T082GoaRcK9uv9oMV+zwIyiEAKyKWbKFtoyckHHpxTo/DsaaE2tzXLeXNZPLCwjAQzK6r5RycseSMgfmM1T8B+b/wldiltpP8Aa9zI5jt7PA/eSsMJ144PP4V1qq4NQ2X32RjOHtG5tXf3XN5tR8PXcl3DPdapDaX0hlV0QP8AY1dw0kWzI37ioy4I4VcA8isvVidY1We/e3S3tZGeaz8qU+aAAXYxjHzfL87ISCM8EE1R123vbTUr221CA297HcSJcREAbJNx3LgccHPSuh+H2k6br81rpN/FJFGVaSS6ScxsDkoka9jld+R1IA9M1VKo6z5WZyp8iuirpsviiAajcf2lJDBbWrTyzTIDHdLgBF+Zf3u4OMbs4B5rD0m10i51y3Gt4sLe5/extDKEjwSRtbP3VyGwQeAQD61738QNT8IeDdDj/s5ItTubmD7PaxSpnMKDALA5Cxg44HLY/GvnjSb3U5720sba8kj3yLDHtUfIC2MgY46k8UOpDnW78n/XUp0pJO9lp0/rodxeeMdP8K6ZNpvhy1SIT3LSTy3FskqNGSf3W1znYQI/fArz7XfGniDWLiQ6hfm5LLtUFcJGMYARRwoAOAAMfjXrEPgw2ht4ng1dU1G2Nx9ojjjuJ3ZpQqI0hUqihCZGHBOSCTjFeVX3h3VLXWrm1XR/tkkNw0MkQjIww6EAEEKwwR261pXjWlZ9H0RnQlRV/wBTAmgZrSzAU5YyBQBnPzDp61dHhzV1tzO2k6gIgMlzayAAflXeN4a8Ux21jFBfWFgHB328cq2ywknjDcl+vJB6+tZ9xYWtvdvarqmrX1+kpjD2kPBcEghSz725B5wtc9XCOm/fTNoYhT+FnGaZbM8szoM7LaVs9vukfzIrf+IOnaBY+Jbmz8NXct9pkCxxx3MnWVgi+Y3Qcb92PbFS/bL5Rd2Jt7eee8URtc/ZsXEq7gdvsSVwcjdkEE1j3BJAOc5Fc1RJWSNYNtmhY6qseinStuVNooBK52uspIKn+HIY5x12iuw+GGoRRJNYy3KB3lVoIm/jyDkqe54GR+PrXD2luIdLTWniWaKK5e2kRlYgBowwbgjoeQO5FekfEa00OK00nXNHe3jkunEl7dW7mTy5CgYblBx15yAPoSaVfDyrU3zdjShW9lNOPc76KHzYxkcelC6eA+RHg+uKnsg1tMbS6ntppo9qtJbvvifKhgyH+6QwIyM881oyy28MDTTyJFGg3O7tgKPc18zKElLl6n08JxlHm6FVII4omllKIiKSzucADuST0Fec+Or7Vdat3t9Kjjs9Kx813cyiH7QP9kH5vL98fN9OKb4/+IcUN09na2z+XC7ZEy43sjAMNvqPqOa4m8+I+sm1lWOK3svtRdWktY2jnlixjDNvIOckEkEnmvcwWX0qcees9e3+bPExuOnUfJS27lXRZHi1O3g0t4UvRJlbluWXb83yA/d4HXGfdelYV/dJd+JfJilDwPdKXCn5XkzhmA+pbHtitTQreSTT765hvY4JGZIIZZj5YDsrAIpGdvylgM+2afp9rcHUIzrmpZhjlSOUJh9gYsAZGAyVypHBPvXsQotxjHv9x5MqiTbOYTRrlocKYWuA2BbiTMpHc7Rx+ufamQ6ddxXSrNaTx8Mx3xMvAUk9R7V3Piy18P8A2W3Nro8sZkmPlm1k2GWNi4jbYykZbZuGAPvCsh/D+sl3t9OttSdD8k0BYFo8jIDbTtKkdD04IOMVhUwnLK0dfQuFdNXlocqsUaWKz+eBOXAWIDJA/vH/AAr0n+2bHxB4IuhBA9rfQRlZVklDpKnJO0DBXbn5Sc/eI7ZHDa7pN1plzLaXcRjmjPIzkH0IPce9SeF5bmKS4WL5oxA8siM2FIUckjv1/ImsYSdOTi10sb/Ek09L3Ox8P6bJNoLTLompS26xjdeR7mKkjqExtK+3fH3qo69Y3Y1K4zEwjMhfzipERU8h93TaQQcj+ddF4YktvDt0I9XNx59xGzI7RusltPEhEDgK25o8yHO4D7nAxVx4/Dl/rsl2UdLeKJrmTeXeFtpjjaVIQudxkd8AnblckdRXdHCqUUr2Zwuu1Ju2hX8J3mn2OjXEclrrF8/lSLDc2sZihhDA7t4ziVdx3APgA59ax7jSLK4it5tNkv8AUg8C+dHDGiNFIo2lSCWbtnIUjnqa6bQ9J1yQTQFE1LVLeRVktRqAaeGJVIZkAfajCQqOTkYxjGataz8M9RtPC0l8+nwR3LTROXmnCFNyOzxqCAuMjIxknHXApyhJwSa9P66jg/efL8zg2kuLW0FlDpk1vMZCY/O3PMqP8jbA2ACRnJwCfUDFX9auX0fULKxDXUlum24eCeRGXGcfIyFkIYZGR6EGsnw+iSalGZ42eGWVVBJx83GDuPQjcpz24NW/GM8Nxr/lQae2npZ28dobZnLlGTO7LHk5YscnrmsFK0OZPU1t71joNDtV1WBdQs5LoXiI6owYMsARZWLTcEFWXYMcKd7AZ24rm7iKS3uDFJA9s6HmJ0KmPPOMHkYBHWpdFnbSpE1FH23cmBbdwsat87MO4YjYAeCN59KteN/EuoeJ/Et94k1LyVvb6YSyCJdqAgBRgEnjCjuazrTUku/UunFq/Yu6v4o1zWNG0bw7f6hLPp+kKVs4WjVfJVuoBABPHrnipbe9tk0O50+TT4ZJ2mSaC7B2yw4wGQ8fMjAdD0PNZt3quo63eNqerXLXNy4ChiAAqjoABwBXU/C2z0bVPEx03WrU3EdxbSCAb2XbIo39VI6qrDPb8amEbz5YvcrVpXMzQr66tNRimtVZ5F/gVSS4xyOPbP8AkV6zpt1Fd2sVzCQUkUMOaydU8KaJ4b1Ge+ia/e3lijbTikgbypyHV7aY5B2yAhVfsSOQQM4V1eWNrdJq+i+dZytcYltn/eo8LD7wyVO/KsCvHzBsHjBK+ClbXclVWpNNWP/Z" alt="Foto Mamat Aan Suciarahmat, M.Pd"></div>
+      <div class="dev-meta">
+        <dl>
+          <dt>Nama</dt><dd>Mamat Aan Suciarahmat, M.Pd</dd>
+          <dt>Instansi</dt><dd>SMAN 1 Majalengka</dd>
+          <dt>Mata pelajaran</dt><dd>Fisika — Besaran &amp; Satuan</dd>
+          <dt>Jenjang</dt><dd>SMA Fase E</dd>
+          <dt>Tahun</dt><dd>2026</dd>
+          <dt>Kontak</dt><dd>aansuciarahmat71@guru.sma.belajar.id</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <footer>LKPD DIGITAL · BESARAN POKOK, TURUNAN &amp; SATUAN</footer>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   DATA SISWA (diisi saat siswa memulai Latihan)
+============================================================ */
+let studentName = '';
+let studentClass = '';
+
+/* ============================================================
+   REKAP OTOMATIS KE GOOGLE SPREADSHEET
+   Ganti nilai di bawah ini dengan URL Web App Google Apps Script
+   milik guru (lihat panduan setup di bagian Info Pengembang / chat).
+============================================================ */
+const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzS_6y4gFGZou19aH5_sUCYmN_ev9HRYA3QSyMd5mMuuesdlK1R52ApPlZdiXZiR-aUaA/exec";
+
+function bindQuizStart(ids, engine){
+  const nameInput = document.getElementById(ids.nameInput);
+  const classInput = document.getElementById(ids.classInput);
+  const errBox = document.getElementById(ids.errorBox);
+  const startBtn = document.getElementById(ids.startBtn);
+  const startCard = document.getElementById(ids.startCard);
+  const quizArea = document.getElementById(ids.quizArea);
+
+  function start(){
+    const name = nameInput.value.trim();
+    const kelas = classInput.value.trim();
+    if(!name || !kelas){
+      errBox.style.display = 'block';
+      return;
+    }
+    errBox.style.display = 'none';
+    studentName = name;
+    studentClass = kelas;
+    document.getElementById('badgeName').textContent = studentName;
+    document.getElementById('badgeClass').textContent = studentClass;
+    startCard.style.display = 'none';
+    quizArea.style.display = 'block';
+    engine.init();
+  }
+
+  startBtn.addEventListener('click', start);
+  classInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') start(); });
+}
+
+buildRuler();
+buildRulerDemo();
+
+/* ============================================================
+   TAB NAVIGATION
+============================================================ */
+const panels = { materi: document.getElementById('panel-materi'), konversi: document.getElementById('panel-konversi'), notasi: document.getElementById('panel-notasi'), angkapenting: document.getElementById('panel-angkapenting'), latihan: document.getElementById('panel-latihan'), latihan2: document.getElementById('panel-latihan2'), latihan3: document.getElementById('panel-latihan3'), latihan4: document.getElementById('panel-latihan4'), jangkasorong: document.getElementById('panel-jangkasorong'), latihan5: document.getElementById('panel-latihan5'), mikrometer: document.getElementById('panel-mikrometer'), latihan6: document.getElementById('panel-latihan6'), evaluasi: document.getElementById('panel-evaluasi'), dev: document.getElementById('panel-dev') };
+
+function goToTab(tabName){
+  const targetPanel = panels[tabName];
+  if(!targetPanel){ console.warn('Panel tidak ditemukan untuk tab:', tabName); return; }
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab === tabName);
+  });
+  Object.values(panels).forEach(p=>{ if(p) p.classList.remove('active'); });
+  targetPanel.classList.add('active');
+  // Reset posisi scroll ke atas supaya konten tab baru langsung terlihat,
+  // meskipun sebelumnya halaman sedang discroll jauh ke bawah.
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Delegasi klik: menangkap klik pada tombol nav ATAU kartu "Lanjutkan ke ..."
+// yang sama-sama memakai class .tab-btn, termasuk yang ditambahkan/berubah nanti.
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  goToTab(btn.dataset.tab);
+});
+
+/* ============================================================
+   HEADER RULER + DEMO RULER (visual signature)
+============================================================ */
+function buildRuler(){
+  const ruler = document.getElementById('headerRuler');
+  const majors = 12;
+  for(let i=0;i<=majors;i++){
+    const pct = (i/majors)*100;
+    const tick = document.createElement('div');
+    tick.className='tick-major'; tick.style.left = pct+'%';
+    ruler.appendChild(tick);
+    if(i<majors){
+      const label = document.createElement('div');
+      label.className='tick-label'; label.style.left = pct+'%'; label.textContent = i;
+      ruler.appendChild(label);
+    }
+  }
+}
+function buildRulerDemo(){
+  const ruler = document.getElementById('rulerDemo');
+  const pointer = document.getElementById('rulerPointer');
+  const readout = document.getElementById('rulerReadout');
+  const maxCm = 15;
+  for(let mm=0; mm<=maxCm*10; mm++){
+    const pct = (mm/(maxCm*10))*100;
+    const grad = document.createElement('div');
+    const isMajor = mm % 10 === 0;
+    grad.className = 'grad ' + (isMajor ? 'major' : (mm%5===0 ? 'major' : 'minor'));
+    if(!isMajor && mm%5!==0) grad.style.height='10px';
+    grad.style.left = pct+'%';
+    ruler.appendChild(grad);
+    if(isMajor){
+      const label = document.createElement('div');
+      label.className='grad-label'; label.style.left = pct+'%'; label.textContent = (mm/10);
+      ruler.appendChild(label);
+    }
+  }
+  ruler.addEventListener('mousemove', (e)=>{
+    const rect = ruler.getBoundingClientRect();
+    let pct = (e.clientX - rect.left)/rect.width;
+    pct = Math.max(0, Math.min(1, pct));
+    pointer.style.left = (pct*100)+'%';
+    readout.textContent = 'Posisi: ' + (pct*maxCm).toFixed(1).replace('.',',') + ' cm';
+  });
+  ruler.addEventListener('touchmove', (e)=>{
+    const rect = ruler.getBoundingClientRect();
+    const touch = e.touches[0];
+    let pct = (touch.clientX - rect.left)/rect.width;
+    pct = Math.max(0, Math.min(1, pct));
+    pointer.style.left = (pct*100)+'%';
+    readout.textContent = 'Posisi: ' + (pct*maxCm).toFixed(1).replace('.',',') + ' cm';
+  }, {passive:true});
+}
+
+/* ============================================================
+   ALAT KONVERSI SATUAN INTERAKTIF (MATERI 2)
+============================================================ */
+const CONVERTER_UNITS = {
+  panjang: {
+    baseLabel: 'meter',
+    units: { km:1000, hm:100, dam:10, m:1, dm:0.1, cm:0.01, mm:0.001 }
+  },
+  massa: {
+    baseLabel: 'gram',
+    units: { ton:1000000, kuintal:100000, kg:1000, ons:100, hg:100, dag:10, g:1, dg:0.1, cg:0.01, mg:0.001 }
+  },
+  waktu: {
+    baseLabel: 'sekon',
+    units: { hari:86400, jam:3600, menit:60, sekon:1 }
+  }
+};
+
+function formatConvNumber(n){
+  if(!isFinite(n)) return '0';
+  const rounded = Math.round(n * 1e8) / 1e8; // hindari sisa desimal floating point
+  return rounded.toLocaleString('id-ID', {maximumFractionDigits:8});
+}
+
+function populateConverterUnitSelects(){
+  const category = document.getElementById('convCategory').value;
+  const fromSel = document.getElementById('convFrom');
+  const toSel = document.getElementById('convTo');
+  const units = Object.keys(CONVERTER_UNITS[category].units);
+  fromSel.innerHTML = units.map(u=>`<option value="${u}">${u}</option>`).join('');
+  toSel.innerHTML = units.map(u=>`<option value="${u}">${u}</option>`).join('');
+  // default: satuan asal = item pertama, satuan tujuan = item ke-4 (kalau ada) supaya hasilnya tidak sama persis
+  fromSel.selectedIndex = 0;
+  toSel.selectedIndex = Math.min(3, units.length - 1);
+}
+
+function updateConverterResult(){
+  const category = document.getElementById('convCategory').value;
+  const value = parseFloat(document.getElementById('convValue').value);
+  const fromUnit = document.getElementById('convFrom').value;
+  const toUnit = document.getElementById('convTo').value;
+  const resultEl = document.getElementById('convResult');
+  const data = CONVERTER_UNITS[category];
+
+  if(isNaN(value)){
+    resultEl.innerHTML = 'Masukkan angka yang valid.';
+    return;
+  }
+  const baseValue = value * data.units[fromUnit];
+  const converted = baseValue / data.units[toUnit];
+  resultEl.innerHTML = `${formatConvNumber(value)} ${fromUnit} = <strong>${formatConvNumber(converted)} ${toUnit}</strong>
+    <span class="small">Satuan dasar SI untuk kategori ini: ${data.baseLabel}</span>`;
+}
+
+function initConverter(){
+  const categorySel = document.getElementById('convCategory');
+  const valueInput = document.getElementById('convValue');
+  const fromSel = document.getElementById('convFrom');
+  const toSel = document.getElementById('convTo');
+  const swapBtn = document.getElementById('convSwapBtn');
+
+  populateConverterUnitSelects();
+  updateConverterResult();
+
+  categorySel.addEventListener('change', ()=>{ populateConverterUnitSelects(); updateConverterResult(); });
+  valueInput.addEventListener('input', updateConverterResult);
+  fromSel.addEventListener('change', updateConverterResult);
+  toSel.addEventListener('change', updateConverterResult);
+  swapBtn.addEventListener('click', ()=>{
+    const tmp = fromSel.value;
+    fromSel.value = toSel.value;
+    toSel.value = tmp;
+    updateConverterResult();
+  });
+}
+
+/* ============================================================
+   ALAT KONVERSI NOTASI ILMIAH (MATERI 3)
+============================================================ */
+function updateNotasiResult(){
+  const input = document.getElementById('notasiInput');
+  const resultEl = document.getElementById('notasiResult');
+  const value = parseFloat(input.value);
+
+  if(isNaN(value)){
+    resultEl.textContent = 'Masukkan angka yang valid.';
+    return;
+  }
+  if(value === 0){
+    resultEl.textContent = '0 tidak memiliki bentuk notasi ilmiah baku.';
+    return;
+  }
+
+  const expStr = value.toExponential(6); // contoh: "3.200000e+5"
+  const [mantissaRaw, expRaw] = expStr.split('e');
+  let mantissa = parseFloat(mantissaRaw);
+  const exponent = parseInt(expRaw, 10);
+  const mantissaFormatted = mantissa.toLocaleString('id-ID', { maximumFractionDigits: 6 });
+
+  resultEl.innerHTML = `${formatConvNumber(value)} = <strong>${mantissaFormatted} × 10<sup>${exponent}</sup></strong>`;
+}
+function initNotasiConverter(){
+  const input = document.getElementById('notasiInput');
+  input.addEventListener('input', updateNotasiResult);
+  updateNotasiResult();
+}
+
+/* ============================================================
+   DEMO — ALAT HITUNG ANGKA PENTING (MATERI 4)
+============================================================ */
+function countSigFigs(raw){
+  let s = (raw || '').toString().trim();
+  if(s === '') return null;
+  s = s.replace(/^[+\-]/, '');
+
+  // Dukung notasi ilmiah sederhana, misal "2,50 × 10³" -> hanya mantissa yang dihitung
+  const timesIdx = s.search(/[×xX]/);
+  if(timesIdx !== -1){ s = s.slice(0, timesIdx).trim(); }
+
+  // Ganti koma desimal menjadi titik untuk validasi format
+  s = s.replace(',', '.');
+  if(!/^\d*\.?\d*$/.test(s) || s === '' || s === '.'){ return null; }
+
+  const hasDecimal = s.includes('.');
+  let digits = s.replace('.', '');
+  const firstNonZero = digits.search(/[1-9]/);
+
+  if(firstNonZero === -1){
+    return { count: 0, note: 'Bilangan nol tidak memiliki angka penting yang bermakna.' };
+  }
+
+  let significant = digits.slice(firstNonZero);
+  if(!hasDecimal){
+    // Untuk bilangan bulat, nol di ujung kanan dianggap tidak penting (ambigu) kecuali ditulis dengan notasi ilmiah/koma
+    significant = significant.replace(/0+$/, '');
+    if(significant === '') significant = '0';
+  }
+  return { count: significant.length, note: null };
+}
+
+function updateAPResult(){
+  const input = document.getElementById('apInput');
+  const resultEl = document.getElementById('apResult');
+  const result = countSigFigs(input.value);
+
+  if(result === null){
+    resultEl.textContent = 'Masukkan angka yang valid (gunakan koma untuk desimal).';
+    return;
+  }
+  if(result.note){
+    resultEl.textContent = result.note;
+    return;
+  }
+  resultEl.innerHTML = `<strong>${result.count} angka penting</strong><span class="small">Dihitung dari angka bukan nol pertama hingga angka terakhir sesuai aturan angka penting.</span>`;
+}
+
+function initAPConverter(){
+  const input = document.getElementById('apInput');
+  input.addEventListener('input', updateAPResult);
+  updateAPResult();
+}
+
+/* ============================================================
+   DEMO — ALAT HITUNG JANGKA SORONG (MATERI 5)
+============================================================ */
+function parseLocaleNumber(raw){
+  const s = (raw || '').toString().trim().replace(',', '.');
+  if(s === '' || isNaN(Number(s))) return null;
+  return Number(s);
+}
+function formatLocaleNumber(n){
+  return n.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+}
+function updateJSResult(){
+  const utamaEl = document.getElementById('jsUtama');
+  const noniusEl = document.getElementById('jsNonius');
+  const resultEl = document.getElementById('jsResult');
+  const utama = parseLocaleNumber(utamaEl.value);
+  const nonius = parseLocaleNumber(noniusEl.value);
+  if(utama === null || nonius === null){
+    resultEl.textContent = 'Masukkan angka yang valid pada kedua kolom.';
+    return;
+  }
+  const hasil = utama + (nonius * 0.1);
+  resultEl.innerHTML = `<strong>${formatLocaleNumber(hasil)} mm</strong> (${formatLocaleNumber(hasil/10)} cm)<span class="small">Dihitung dari: skala utama + (skala nonius × 0,1 mm)</span>`;
+}
+function initJSConverter(){
+  const utamaEl = document.getElementById('jsUtama');
+  const noniusEl = document.getElementById('jsNonius');
+  utamaEl.addEventListener('input', updateJSResult);
+  noniusEl.addEventListener('input', updateJSResult);
+  updateJSResult();
+}
+
+/* ============================================================
+   DEMO — ALAT HITUNG MIKROMETER SEKRUP (MATERI 6)
+============================================================ */
+function updateMKResult(){
+  const utamaEl = document.getElementById('mkUtama');
+  const putarEl = document.getElementById('mkPutar');
+  const resultEl = document.getElementById('mkResult');
+  const utama = parseLocaleNumber(utamaEl.value);
+  const putar = parseLocaleNumber(putarEl.value);
+  if(utama === null || putar === null){
+    resultEl.textContent = 'Masukkan angka yang valid pada kedua kolom.';
+    return;
+  }
+  const hasil = utama + (putar * 0.01);
+  resultEl.innerHTML = `<strong>${formatLocaleNumber(hasil)} mm</strong><span class="small">Dihitung dari: skala utama + (skala putar × 0,01 mm)</span>`;
+}
+function initMKConverter(){
+  const utamaEl = document.getElementById('mkUtama');
+  const putarEl = document.getElementById('mkPutar');
+  utamaEl.addEventListener('input', updateMKResult);
+  putarEl.addEventListener('input', updateMKResult);
+  updateMKResult();
+}
+
+/* ============================================================
+   QUIZ DATA — LATIHAN (20 SOAL, 6 JENIS)
+============================================================ */
+function norm(s){ return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' '); }
+function matchAny(value, accepted){ const v = norm(value); return accepted.some(a => norm(a) === v); }
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function pad2(n){ return n.toString().padStart(2,'0'); }
+
+const quiz = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'Manakah yang termasuk besaran pokok?',
+    options:['Luas','Gaya','Waktu','Kecepatan'], answer:2 },
+  { id:2, type:'mc', prompt:'Satuan SI untuk besaran massa adalah…',
+    options:['Gram','Ons','Kilogram','Ton'], answer:2 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua yang termasuk BESARAN POKOK.',
+    options:['Panjang','Massa','Kecepatan','Waktu','Luas','Suhu'], answer:[0,1,3,5] },
+  { id:4, type:'checkbox', prompt:'Centang semua yang termasuk contoh SATUAN TIDAK BAKU.',
+    options:['Depa','Meter','Jengkal','Kilogram','Hasta','Sekon'], answer:[0,2,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Lengkapi satuan SI untuk besaran pokok berikut ini.',
+    blanks:[
+      {label:'Satuan SI untuk Panjang', accepted:['meter','m']},
+      {label:'Satuan SI untuk Massa', accepted:['kilogram','kg']},
+      {label:'Satuan SI untuk Waktu', accepted:['sekon','detik','s']}
+    ]},
+  { id:6, type:'short', prompt:'Lengkapi satuan untuk besaran turunan berikut ini.',
+    blanks:[
+      {label:'Satuan Kecepatan', accepted:['m/s','meter per sekon','meter/sekon']},
+      {label:'Satuan Luas', accepted:['m2','m²','meter persegi']},
+      {label:'Satuan Gaya', accepted:['newton','n']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan besaran pokok berikut dengan satuannya.',
+    left:['Panjang','Massa','Waktu','Suhu'],
+    rightPool:['meter','kilogram','sekon','kelvin'],
+    answer:['meter','kilogram','sekon','kelvin'] },
+  { id:8, type:'match', prompt:'Jodohkan besaran turunan berikut dengan satuannya.',
+    left:['Luas','Volume','Kecepatan','Massa jenis'],
+    rightPool:['m²','m³','m/s','kg/m³'],
+    answer:['m²','m³','m/s','kg/m³'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Satuan adalah pembanding yang digunakan dalam suatu pengukuran.', answer:true },
+  { id:10, type:'tf', statement:'Kecepatan termasuk besaran pokok.', answer:false },
+];
+
+/* ============================================================
+   QUIZ DATA — LATIHAN 2 (20 SOAL, KHUSUS KONVERSI SATUAN)
+============================================================ */
+const quiz3 = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'5 km sama dengan … m.',
+    options:['50 m','500 m','5.000 m','50.000 m'], answer:2 },
+  { id:2, type:'mc', prompt:'2 jam sama dengan … sekon.',
+    options:['120 sekon','3.600 sekon','7.200 sekon','86.400 sekon'], answer:2 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua yang termasuk SATUAN PANJANG.',
+    options:['km','kg','cm','sekon','mm','liter'], answer:[0,2,4] },
+  { id:4, type:'checkbox', prompt:'Centang pernyataan yang BENAR tentang tangga konversi satuan panjang.',
+    options:['Setiap turun satu anak tangga (ke kanan), nilai dikalikan 10','Setiap naik satu anak tangga (ke kiri), nilai dikalikan 10','1 km = 1.000 m','1 m = 100 km','1 cm = 10 mm','1 mm = 10 cm'], answer:[0,2,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Lengkapi konversi satuan panjang berikut ini.',
+    blanks:[
+      {label:'3 km = ... m', accepted:['3000','3.000']},
+      {label:'250 cm = ... m', accepted:['2.5','2,5']},
+      {label:'70 mm = ... cm', accepted:['7']}
+    ]},
+  { id:6, type:'short', prompt:'Lengkapi konversi satuan massa berikut ini.',
+    blanks:[
+      {label:'2 kg = ... g', accepted:['2000','2.000']},
+      {label:'500 g = ... kg', accepted:['0.5','0,5']},
+      {label:'3 ton = ... kg', accepted:['3000','3.000']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan satuan berikut dengan nilai konversinya ke satuan dasar SI.',
+    left:['1 km','1 cm','1 mg','1 jam'],
+    rightPool:['1.000 m','0,01 m','0,001 g','3.600 s'],
+    answer:['1.000 m','0,01 m','0,001 g','3.600 s'] },
+  { id:8, type:'match', prompt:'Jodohkan awalan (prefiks) satuan dengan faktor pengalinya.',
+    left:['kilo','hekto','desi','mili'],
+    rightPool:['1.000','100','0,1','0,001'],
+    answer:['1.000','100','0,1','0,001'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Satuan waktu mengikuti kelipatan 10 seperti satuan panjang dan massa.', answer:false },
+  { id:10, type:'tf', statement:'1 liter sama dengan 1 dm³.', answer:true },
+];
+
+/* ============================================================
+   QUIZ DATA — LATIHAN 3 (20 SOAL, KHUSUS NOTASI ILMIAH)
+============================================================ */
+const quizNotasi = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'Bentuk notasi ilmiah dari 45.000 adalah…',
+    options:['4,5 × 10⁴','45 × 10³','4,5 × 10³','0,45 × 10⁵'], answer:0 },
+  { id:2, type:'mc', prompt:'Bentuk notasi ilmiah dari 0,0032 adalah…',
+    options:['3,2 × 10⁻³','3,2 × 10³','32 × 10⁻⁴','0,32 × 10⁻²'], answer:0 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua bilangan yang ditulis dengan notasi ilmiah yang BENAR (memenuhi 1 ≤ a < 10).',
+    options:['3,5 × 10⁴','45 × 10³','7,2 × 10⁻²','0,8 × 10⁵','9,1 × 10¹','12 × 10²'], answer:[0,2,4] },
+  { id:4, type:'checkbox', prompt:'Centang semua contoh BILANGAN SANGAT KECIL (notasi ilmiahnya berpangkat negatif).',
+    options:['Massa elektron ≈ 9,1 × 10⁻³¹ kg','Jarak Bumi–Matahari ≈ 1,5 × 10⁸ km','Diameter virus ≈ 1 × 10⁻⁷ m','Kecepatan cahaya ≈ 3 × 10⁸ m/s','Jari-jari atom ≈ 1 × 10⁻¹⁰ m','Penduduk dunia ≈ 8 × 10⁹ jiwa'], answer:[0,2,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Tentukan nilai a (mantissa) untuk notasi ilmiah dari bilangan berikut ini.',
+    blanks:[
+      {label:'75.000 → a = ...', accepted:['7.5','7,5']},
+      {label:'0,00061 → a = ...', accepted:['6.1','6,1']},
+      {label:'9.000.000 → a = ...', accepted:['9']}
+    ]},
+  { id:6, type:'short', prompt:'Tentukan nilai n (pangkat/eksponen) untuk notasi ilmiah dari bilangan berikut ini.',
+    blanks:[
+      {label:'75.000 → n = ...', accepted:['4']},
+      {label:'0,00061 → n = ...', accepted:['-4']},
+      {label:'9.000.000 → n = ...', accepted:['6']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan bilangan berikut dengan bentuk notasi ilmiahnya.',
+    left:['4.000','0,006','520.000','0,0009'],
+    rightPool:['4 × 10³','6 × 10⁻³','5,2 × 10⁵','9 × 10⁻⁴'],
+    answer:['4 × 10³','6 × 10⁻³','5,2 × 10⁵','9 × 10⁻⁴'] },
+  { id:8, type:'match', prompt:'Jodohkan notasi ilmiah berikut dengan besaran sains yang mendekati nilainya.',
+    left:['≈3 × 10⁸ m/s','≈9,1 × 10⁻³¹ kg','≈1,5 × 10⁸ km','≈6,02 × 10²³ /mol'],
+    rightPool:['Kecepatan cahaya','Massa elektron','Jarak Bumi–Matahari','Bilangan Avogadro'],
+    answer:['Kecepatan cahaya','Massa elektron','Jarak Bumi–Matahari','Bilangan Avogadro'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Notasi ilmiah 12 × 10⁴ sudah ditulis dengan benar.', answer:false },
+  { id:10, type:'tf', statement:'Semakin kecil suatu bilangan (mendekati nol), semakin negatif pangkat pada notasi ilmiahnya.', answer:true },
+];
+
+/* ============================================================
+   QUIZ DATA — LATIHAN 4 (20 SOAL, KHUSUS ANGKA PENTING)
+============================================================ */
+const quiz4 = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'Jumlah angka penting pada bilangan 205 adalah…',
+    options:['1','2','3','4'], answer:2 },
+  { id:2, type:'mc', prompt:'Jumlah angka penting pada bilangan 0,0056 adalah…',
+    options:['1','2','3','4'], answer:1 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua bilangan berikut yang memiliki 3 angka penting.',
+    options:['4,50','0,0032','206','1.250','3,20 × 10²','0,00500'], answer:[0,2,4,5] },
+  { id:4, type:'checkbox', prompt:'Centang semua ATURAN angka penting berikut yang BENAR.',
+    options:['Semua angka bukan nol termasuk angka penting','Angka nol yang terletak di depan angka bukan nol (sebelum angka pasti) termasuk angka penting','Angka nol di antara dua angka bukan nol termasuk angka penting','Notasi ilmiah tidak dapat digunakan untuk menunjukkan jumlah angka penting','Angka nol di belakang koma desimal dan di belakang angka bukan nol termasuk angka penting','Semakin banyak angka penting suatu hasil pengukuran, semakin rendah ketelitiannya'], answer:[0,2,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Tentukan jumlah angka penting dari bilangan berikut ini.',
+    blanks:[
+      {label:'304 → jumlah AP = ...', accepted:['3']},
+      {label:'0,0070 → jumlah AP = ...', accepted:['2']},
+      {label:'12,50 → jumlah AP = ...', accepted:['4']}
+    ]},
+  { id:6, type:'short', prompt:'Tentukan hasil pembulatan berikut sesuai jumlah angka penting yang diminta.',
+    blanks:[
+      {label:'12,346 dibulatkan menjadi 3 angka penting = ...', accepted:['12,3','12.3']},
+      {label:'0,04567 dibulatkan menjadi 2 angka penting = ...', accepted:['0,046','0.046']},
+      {label:'2,678 dibulatkan menjadi 3 angka penting = ...', accepted:['2,68','2.68']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan bilangan berikut dengan jumlah angka pentingnya.',
+    left:['4 × 10²','0,25','306','12,00'],
+    rightPool:['1 AP','2 AP','3 AP','4 AP'],
+    answer:['1 AP','2 AP','3 AP','4 AP'] },
+  { id:8, type:'match', prompt:'Jodohkan istilah berikut dengan penjelasannya dalam aturan angka penting.',
+    left:['Angka penting','Angka taksiran','Angka pasti','Notasi ilmiah'],
+    rightPool:['Semua angka hasil pengukuran yang terdiri dari angka pasti dan satu angka taksiran','Angka terakhir hasil pengukuran yang nilainya diperkirakan/tidak pasti','Angka yang diperoleh dari pembacaan skala alat ukur secara langsung dan pasti benar','Cara penulisan bilangan dalam bentuk a × 10ⁿ yang juga menunjukkan jumlah angka penting dengan jelas'],
+    answer:['Semua angka hasil pengukuran yang terdiri dari angka pasti dan satu angka taksiran','Angka terakhir hasil pengukuran yang nilainya diperkirakan/tidak pasti','Angka yang diperoleh dari pembacaan skala alat ukur secara langsung dan pasti benar','Cara penulisan bilangan dalam bentuk a × 10ⁿ yang juga menunjukkan jumlah angka penting dengan jelas'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Angka nol di antara dua angka bukan nol termasuk angka penting.', answer:true },
+  { id:10, type:'tf', statement:'Angka nol yang terletak di depan angka bukan nol (misalnya pada 0,0025) termasuk angka penting.', answer:false },
+];
+
+const quiz5 = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'Ketelitian (nilai skala terkecil) jangka sorong pada umumnya adalah…',
+    options:['1 mm','0,5 mm','0,1 mm','0,01 mm'], answer:2 },
+  { id:2, type:'mc', prompt:'Bagian jangka sorong yang digunakan untuk mengukur diameter DALAM suatu benda (misal cincin) adalah…',
+    options:['Rahang luar (atas)','Rahang dalam (bawah)','Tangkai ukur kedalaman','Baut pengunci'], answer:1 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua fungsi pengukuran yang DAPAT dilakukan oleh jangka sorong.',
+    options:['Mengukur diameter luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Mengukur massa benda','Mengukur suhu benda','Mengukur panjang benda kecil secara teliti'], answer:[0,1,2,5] },
+  { id:4, type:'checkbox', prompt:'Centang semua PERNYATAAN berikut yang BENAR tentang jangka sorong.',
+    options:['Jangka sorong memiliki dua skala, yaitu skala utama dan skala nonius','Jangka sorong lebih teliti daripada mistar','Skala nonius dibaca dari garis yang paling berimpit dengan skala utama','Ketelitian jangka sorong sama dengan ketelitian mikrometer sekrup','Skala utama dibaca dari angka tepat sebelum garis nol nonius','Jangka sorong tidak dapat mengukur kedalaman lubang'], answer:[0,1,2,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Hitunglah hasil pengukuran jangka sorong berikut (ketelitian 0,1 mm). Gunakan rumus: hasil = skala utama + (skala nonius × 0,1 mm).',
+    blanks:[
+      {label:'Skala utama 12 mm, garis nonius berimpit ke-5 → hasil = ... mm', accepted:['12,5','12.5']},
+      {label:'Skala utama 30 mm, garis nonius berimpit ke-2 → hasil = ... mm', accepted:['30,2','30.2']},
+      {label:'Skala utama 45 mm, garis nonius berimpit ke-8 → hasil = ... mm', accepted:['45,8','45.8']}
+    ]},
+  { id:6, type:'short', prompt:'Lengkapi pernyataan berikut mengenai jangka sorong.',
+    blanks:[
+      {label:'Bagian yang memuat skala nonius disebut rahang ...', accepted:['geser','rahang geser']},
+      {label:'Satuan ketelitian jangka sorong adalah ... mm', accepted:['0,1','0.1']},
+      {label:'Bagian untuk mengukur kedalaman lubang disebut tangkai ukur ...', accepted:['kedalaman','depth probe']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan bagian jangka sorong berikut dengan fungsinya.',
+    left:['Rahang luar (atas)','Rahang dalam (bawah)','Tangkai ukur kedalaman','Skala nonius'],
+    rightPool:['Mengukur diameter/panjang luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Membantu membaca angka desimal hasil pengukuran'],
+    answer:['Mengukur diameter/panjang luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Membantu membaca angka desimal hasil pengukuran'] },
+  { id:8, type:'match', prompt:'Jodohkan alat ukur berikut dengan ketelitiannya.',
+    left:['Mistar','Jangka sorong','Mikrometer sekrup','Neraca'],
+    rightPool:['1 mm','0,1 mm','0,01 mm','Bervariasi'],
+    answer:['1 mm','0,1 mm','0,01 mm','Bervariasi'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Jangka sorong memiliki ketelitian yang lebih tinggi daripada mistar biasa.', answer:true },
+  { id:10, type:'tf', statement:'Skala utama pada jangka sorong dibaca dari garis skala nonius yang berimpit dengan garis skala utama.', answer:false },
+];
+
+const quiz6 = [
+  // ---- PILIHAN GANDA (2) ----
+  { id:1, type:'mc', prompt:'Ketelitian (nilai skala terkecil) mikrometer sekrup pada umumnya adalah…',
+    options:['1 mm','0,1 mm','0,01 mm','0,001 mm'], answer:2 },
+  { id:2, type:'mc', prompt:'Bagian mikrometer sekrup yang berfungsi memutar thimble dengan tekanan konsisten agar benda tidak rusak adalah…',
+    options:['Poros tetap (anvil)','Laras (sleeve)','Roda bergerigi (ratchet)','Pengunci (lock)'], answer:2 },
+
+  // ---- CHECKBOX / PILIHAN GANDA KOMPLEKS (2) ----
+  { id:3, type:'checkbox', prompt:'Centang semua benda berikut yang PALING TEPAT diukur menggunakan mikrometer sekrup.',
+    options:['Tebal selembar kertas','Diameter kawat tipis','Panjang meja belajar','Diameter kabel kecil','Panjang lapangan sepak bola','Tinggi badan siswa'], answer:[0,1,3] },
+  { id:4, type:'checkbox', prompt:'Centang semua PERNYATAAN berikut yang BENAR tentang mikrometer sekrup.',
+    options:['Mikrometer sekrup memiliki ketelitian 0,01 mm','Skala putar terletak pada bagian thimble','Mikrometer sekrup kurang teliti dibanding jangka sorong','Skala utama terletak pada bagian laras (sleeve)','Ratchet digunakan agar benda tidak terjepit berlebihan','Mikrometer sekrup hanya bisa mengukur benda yang sangat besar'], answer:[0,1,3,4] },
+
+  // ---- URAIAN SINGKAT (2 soal, masing-masing 3 isian) ----
+  { id:5, type:'short', prompt:'Hitunglah hasil pengukuran mikrometer sekrup berikut (ketelitian 0,01 mm). Gunakan rumus: hasil = skala utama + (skala putar × 0,01 mm).',
+    blanks:[
+      {label:'Skala utama 4,5 mm, skala putar berimpit ke-20 → hasil = ... mm', accepted:['4,7','4.7']},
+      {label:'Skala utama 6,0 mm, skala putar berimpit ke-35 → hasil = ... mm', accepted:['6,35','6.35']},
+      {label:'Skala utama 8,5 mm, skala putar berimpit ke-10 → hasil = ... mm', accepted:['8,6','8.6']}
+    ]},
+  { id:6, type:'short', prompt:'Lengkapi pernyataan berikut mengenai mikrometer sekrup.',
+    blanks:[
+      {label:'Bagian yang diputar dan memuat skala putar disebut ...', accepted:['thimble','selubung luar','timbel']},
+      {label:'Satuan ketelitian mikrometer sekrup adalah ... mm', accepted:['0,01','0.01']},
+      {label:'Bagian landasan diam tempat benda diletakkan disebut ...', accepted:['poros tetap','anvil']}
+    ]},
+
+  // ---- JODOHKAN (2) ----
+  { id:7, type:'match', prompt:'Jodohkan bagian mikrometer sekrup berikut dengan fungsinya.',
+    left:['Poros tetap (anvil)','Poros geser (spindle)','Roda bergerigi (ratchet)','Skala putar (thimble)'],
+    rightPool:['Landasan diam tempat benda diletakkan','Bagian yang bergerak menjepit benda','Memutar thimble dengan tekanan konsisten','Membantu membaca angka desimal hasil pengukuran'],
+    answer:['Landasan diam tempat benda diletakkan','Bagian yang bergerak menjepit benda','Memutar thimble dengan tekanan konsisten','Membantu membaca angka desimal hasil pengukuran'] },
+  { id:8, type:'match', prompt:'Jodohkan alat ukur berikut dengan benda yang paling cocok diukur olehnya.',
+    left:['Mistar','Jangka sorong','Mikrometer sekrup','Neraca'],
+    rightPool:['Panjang buku tulis','Diameter dalam pipa kecil','Diameter kawat tipis','Massa suatu benda'],
+    answer:['Panjang buku tulis','Diameter dalam pipa kecil','Diameter kawat tipis','Massa suatu benda'] },
+
+  // ---- BENAR / SALAH (2) ----
+  { id:9, type:'tf', statement:'Mikrometer sekrup memiliki ketelitian sepuluh kali lebih tinggi daripada jangka sorong.', answer:true },
+  { id:10, type:'tf', statement:'Skala putar pada mikrometer sekrup dibaca dari garis pada laras yang berimpit dengan sumbu thimble.', answer:false },
+];
+
+/* ============================================================
+   QUIZ DATA — EVALUASI (30 SOAL, 5 SOAL DARI SETIAP TAB MATERI)
+   Setiap topik menyumbang 1 soal dari tiap jenis: mc, checkbox,
+   short, match, tf — agar komposisi jenis soal tetap merata.
+============================================================ */
+const quiz7 = [
+  // ================= TOPIK 1: BESARAN & SATUAN =================
+  { id:1, type:'mc', topic:'Besaran & Satuan', prompt:'Manakah yang termasuk besaran pokok?',
+    options:['Luas','Gaya','Waktu','Kecepatan'], answer:2 },
+  { id:2, type:'checkbox', topic:'Besaran & Satuan', prompt:'Centang semua yang termasuk BESARAN POKOK.',
+    options:['Panjang','Massa','Kecepatan','Waktu','Luas','Suhu'], answer:[0,1,3,5] },
+  { id:3, type:'short', topic:'Besaran & Satuan', prompt:'Lengkapi satuan SI untuk besaran pokok berikut ini.',
+    blanks:[
+      {label:'Satuan SI untuk Panjang', accepted:['meter','m']},
+      {label:'Satuan SI untuk Massa', accepted:['kilogram','kg']},
+      {label:'Satuan SI untuk Waktu', accepted:['sekon','detik','s']}
+    ]},
+  { id:4, type:'match', topic:'Besaran & Satuan', prompt:'Jodohkan besaran pokok berikut dengan satuannya.',
+    left:['Panjang','Massa','Waktu','Suhu'],
+    rightPool:['meter','kilogram','sekon','kelvin'],
+    answer:['meter','kilogram','sekon','kelvin'] },
+  { id:5, type:'tf', topic:'Besaran & Satuan', statement:'Satuan adalah pembanding yang digunakan dalam suatu pengukuran.', answer:true },
+
+  // ================= TOPIK 2: KONVERSI SATUAN =================
+  { id:6, type:'mc', topic:'Konversi Satuan', prompt:'5 km sama dengan … m.',
+    options:['50 m','500 m','5.000 m','50.000 m'], answer:2 },
+  { id:7, type:'checkbox', topic:'Konversi Satuan', prompt:'Centang semua yang termasuk SATUAN PANJANG.',
+    options:['km','kg','cm','sekon','mm','liter'], answer:[0,2,4] },
+  { id:8, type:'short', topic:'Konversi Satuan', prompt:'Lengkapi konversi satuan panjang berikut ini.',
+    blanks:[
+      {label:'3 km = ... m', accepted:['3000','3.000']},
+      {label:'250 cm = ... m', accepted:['2.5','2,5']},
+      {label:'70 mm = ... cm', accepted:['7']}
+    ]},
+  { id:9, type:'match', topic:'Konversi Satuan', prompt:'Jodohkan satuan berikut dengan nilai konversinya ke satuan dasar SI.',
+    left:['1 km','1 cm','1 mg','1 jam'],
+    rightPool:['1.000 m','0,01 m','0,001 g','3.600 s'],
+    answer:['1.000 m','0,01 m','0,001 g','3.600 s'] },
+  { id:10, type:'tf', topic:'Konversi Satuan', statement:'Satuan waktu mengikuti kelipatan 10 seperti satuan panjang dan massa.', answer:false },
+
+  // ================= TOPIK 3: NOTASI ILMIAH =================
+  { id:11, type:'mc', topic:'Notasi Ilmiah', prompt:'Bentuk notasi ilmiah dari 45.000 adalah…',
+    options:['4,5 × 10⁴','45 × 10³','4,5 × 10³','0,45 × 10⁵'], answer:0 },
+  { id:12, type:'checkbox', topic:'Notasi Ilmiah', prompt:'Centang semua bilangan yang ditulis dengan notasi ilmiah yang BENAR (memenuhi 1 ≤ a < 10).',
+    options:['3,5 × 10⁴','45 × 10³','7,2 × 10⁻²','0,8 × 10⁵','9,1 × 10¹','12 × 10²'], answer:[0,2,4] },
+  { id:13, type:'short', topic:'Notasi Ilmiah', prompt:'Tentukan nilai a (mantissa) untuk notasi ilmiah dari bilangan berikut ini.',
+    blanks:[
+      {label:'75.000 → a = ...', accepted:['7.5','7,5']},
+      {label:'0,00061 → a = ...', accepted:['6.1','6,1']},
+      {label:'9.000.000 → a = ...', accepted:['9']}
+    ]},
+  { id:14, type:'match', topic:'Notasi Ilmiah', prompt:'Jodohkan bilangan berikut dengan bentuk notasi ilmiahnya.',
+    left:['4.000','0,006','520.000','0,0009'],
+    rightPool:['4 × 10³','6 × 10⁻³','5,2 × 10⁵','9 × 10⁻⁴'],
+    answer:['4 × 10³','6 × 10⁻³','5,2 × 10⁵','9 × 10⁻⁴'] },
+  { id:15, type:'tf', topic:'Notasi Ilmiah', statement:'Notasi ilmiah 12 × 10⁴ sudah ditulis dengan benar.', answer:false },
+
+  // ================= TOPIK 4: ANGKA PENTING =================
+  { id:16, type:'mc', topic:'Angka Penting', prompt:'Jumlah angka penting pada bilangan 205 adalah…',
+    options:['1','2','3','4'], answer:2 },
+  { id:17, type:'checkbox', topic:'Angka Penting', prompt:'Centang semua bilangan berikut yang memiliki 3 angka penting.',
+    options:['4,50','0,0032','206','1.250','3,20 × 10²','0,00500'], answer:[0,2,4,5] },
+  { id:18, type:'short', topic:'Angka Penting', prompt:'Tentukan jumlah angka penting dari bilangan berikut ini.',
+    blanks:[
+      {label:'304 → jumlah AP = ...', accepted:['3']},
+      {label:'0,0070 → jumlah AP = ...', accepted:['2']},
+      {label:'12,50 → jumlah AP = ...', accepted:['4']}
+    ]},
+  { id:19, type:'match', topic:'Angka Penting', prompt:'Jodohkan bilangan berikut dengan jumlah angka pentingnya.',
+    left:['4 × 10²','0,25','306','12,00'],
+    rightPool:['1 AP','2 AP','3 AP','4 AP'],
+    answer:['1 AP','2 AP','3 AP','4 AP'] },
+  { id:20, type:'tf', topic:'Angka Penting', statement:'Angka nol di antara dua angka bukan nol termasuk angka penting.', answer:true },
+
+  // ================= TOPIK 5: JANGKA SORONG =================
+  { id:21, type:'mc', topic:'Jangka Sorong', prompt:'Ketelitian (nilai skala terkecil) jangka sorong pada umumnya adalah…',
+    options:['1 mm','0,5 mm','0,1 mm','0,01 mm'], answer:2 },
+  { id:22, type:'checkbox', topic:'Jangka Sorong', prompt:'Centang semua fungsi pengukuran yang DAPAT dilakukan oleh jangka sorong.',
+    options:['Mengukur diameter luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Mengukur massa benda','Mengukur suhu benda','Mengukur panjang benda kecil secara teliti'], answer:[0,1,2,5] },
+  { id:23, type:'short', topic:'Jangka Sorong', prompt:'Hitunglah hasil pengukuran jangka sorong berikut (ketelitian 0,1 mm). Gunakan rumus: hasil = skala utama + (skala nonius × 0,1 mm).',
+    blanks:[
+      {label:'Skala utama 12 mm, garis nonius berimpit ke-5 → hasil = ... mm', accepted:['12,5','12.5']},
+      {label:'Skala utama 30 mm, garis nonius berimpit ke-2 → hasil = ... mm', accepted:['30,2','30.2']},
+      {label:'Skala utama 45 mm, garis nonius berimpit ke-8 → hasil = ... mm', accepted:['45,8','45.8']}
+    ]},
+  { id:24, type:'match', topic:'Jangka Sorong', prompt:'Jodohkan bagian jangka sorong berikut dengan fungsinya.',
+    left:['Rahang luar (atas)','Rahang dalam (bawah)','Tangkai ukur kedalaman','Skala nonius'],
+    rightPool:['Mengukur diameter/panjang luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Membantu membaca angka desimal hasil pengukuran'],
+    answer:['Mengukur diameter/panjang luar benda','Mengukur diameter dalam suatu lubang','Mengukur kedalaman suatu lubang','Membantu membaca angka desimal hasil pengukuran'] },
+  { id:25, type:'tf', topic:'Jangka Sorong', statement:'Jangka sorong memiliki ketelitian yang lebih tinggi daripada mistar biasa.', answer:true },
+
+  // ================= TOPIK 6: MIKROMETER SEKRUP =================
+  { id:26, type:'mc', topic:'Mikrometer Sekrup', prompt:'Ketelitian (nilai skala terkecil) mikrometer sekrup pada umumnya adalah…',
+    options:['1 mm','0,1 mm','0,01 mm','0,001 mm'], answer:2 },
+  { id:27, type:'checkbox', topic:'Mikrometer Sekrup', prompt:'Centang semua benda berikut yang PALING TEPAT diukur menggunakan mikrometer sekrup.',
+    options:['Tebal selembar kertas','Diameter kawat tipis','Panjang meja belajar','Diameter kabel kecil','Panjang lapangan sepak bola','Tinggi badan siswa'], answer:[0,1,3] },
+  { id:28, type:'short', topic:'Mikrometer Sekrup', prompt:'Hitunglah hasil pengukuran mikrometer sekrup berikut (ketelitian 0,01 mm). Gunakan rumus: hasil = skala utama + (skala putar × 0,01 mm).',
+    blanks:[
+      {label:'Skala utama 4,5 mm, skala putar berimpit ke-20 → hasil = ... mm', accepted:['4,7','4.7']},
+      {label:'Skala utama 6,0 mm, skala putar berimpit ke-35 → hasil = ... mm', accepted:['6,35','6.35']},
+      {label:'Skala utama 8,5 mm, skala putar berimpit ke-10 → hasil = ... mm', accepted:['8,6','8.6']}
+    ]},
+  { id:29, type:'match', topic:'Mikrometer Sekrup', prompt:'Jodohkan bagian mikrometer sekrup berikut dengan fungsinya.',
+    left:['Poros tetap (anvil)','Poros geser (spindle)','Roda bergerigi (ratchet)','Skala putar (thimble)'],
+    rightPool:['Landasan diam tempat benda diletakkan','Bagian yang bergerak menjepit benda','Memutar thimble dengan tekanan konsisten','Membantu membaca angka desimal hasil pengukuran'],
+    answer:['Landasan diam tempat benda diletakkan','Bagian yang bergerak menjepit benda','Memutar thimble dengan tekanan konsisten','Membantu membaca angka desimal hasil pengukuran'] },
+  { id:30, type:'tf', topic:'Mikrometer Sekrup', statement:'Mikrometer sekrup memiliki ketelitian sepuluh kali lebih tinggi daripada jangka sorong.', answer:true },
+];
+
+/* ============================================================
+   ENGINE KUIS GENERIK — dipakai untuk Latihan
+============================================================ */
+function createQuizEngine(cfg){
+  const ids = cfg.ids;
+  const quizData = cfg.quiz;
+  const studentAnswers = {};
+  const doubtfulAnswers = new Set();
+  let currentQuestionIndex = 0;
+  let timeRemaining = cfg.durationSeconds;
+  let timerInterval = null;
+  let quizSubmitted = false;
+  let lastResult = null;
+
+  const $ = id => document.getElementById(id);
+
+  function updateTimerDisplay(){
+    const box = $(ids.timerBox);
+    const valueEl = $(ids.timerValue);
+    const m = Math.floor(Math.max(0,timeRemaining) / 60);
+    const s = Math.max(0,timeRemaining) % 60;
+    valueEl.textContent = pad2(m) + ':' + pad2(s);
+    box.classList.toggle('warning', timeRemaining <= 300 && timeRemaining > 0);
+  }
+
+  function startTimer(){
+    updateTimerDisplay();
+    timerInterval = setInterval(()=>{
+      timeRemaining--;
+      updateTimerDisplay();
+      if(timeRemaining <= 0){
+        clearInterval(timerInterval);
+        stopTimerVisual();
+        if(!quizSubmitted){
+          alert('Waktu pengerjaan telah habis. Jawabanmu akan dikumpulkan otomatis.');
+          $(ids.submitBtn).click();
+        }
+      }
+    }, 1000);
+  }
+
+  function stopTimerVisual(){
+    clearInterval(timerInterval);
+    const box = $(ids.timerBox);
+    box.classList.remove('warning');
+    box.classList.add('stopped');
+    box.querySelector('.timer-label').textContent = 'Waktu Berhenti';
+  }
+
+  function isAnswered(q){
+    const v = studentAnswers[q.id];
+    if(v === undefined || v === '') return false;
+    if(Array.isArray(v)){
+      if(v.length === 0) return false;
+      if(q.type === 'short'){ return v.every(x => (x||'').toString().trim() !== ''); }
+      if(q.type === 'match'){ return v.every(x => (x||'').toString().trim() !== ''); }
+      return true;
+    }
+    return true;
+  }
+
+  function updateProgress(){
+    const answeredCount = quizData.filter(q => isAnswered(q)).length;
+    $(ids.progressText).textContent = answeredCount + ' / ' + quizData.length + ' soal terjawab';
+  }
+
+  function buildQnGrid(){
+    const grid = $(ids.qnGrid);
+    grid.innerHTML = '';
+    quizData.forEach((q, i)=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'qn-btn';
+      btn.id = ids.qnGrid + '-btn-' + q.id;
+      btn.textContent = i+1;
+      btn.addEventListener('click', ()=> showQuestion(i));
+      grid.appendChild(btn);
+    });
+  }
+
+  function updateQnGrid(){
+    quizData.forEach((q, i)=>{
+      const btn = $(ids.qnGrid + '-btn-' + q.id);
+      if(!btn) return;
+      btn.classList.toggle('answered', isAnswered(q));
+      btn.classList.toggle('doubt', doubtfulAnswers.has(q.id));
+      btn.classList.toggle('current', i === currentQuestionIndex);
+    });
+  }
+
+  function updateDoubtToggleButton(){
+    const q = quizData[currentQuestionIndex];
+    const btn = $(ids.doubtToggleBtn);
+    const active = doubtfulAnswers.has(q.id);
+    btn.classList.toggle('active', active);
+    btn.textContent = active ? '🚩 Ditandai Ragu-ragu' : '🚩 Tandai Ragu-ragu';
+  }
+
+  function updateNavButtons(){
+    const prevBtn = $(ids.prevBtn);
+    const nextBtn = $(ids.nextBtn);
+    prevBtn.disabled = currentQuestionIndex === 0;
+    nextBtn.textContent = currentQuestionIndex === quizData.length - 1 ? 'Selesai ✓' : 'Berikutnya →';
+  }
+
+  function placeWord(qid, word, blank, bank){
+    if(blank.classList.contains('filled')){
+      const prevWord = blank.textContent;
+      bank.querySelectorAll('.dd-word').forEach(c=>{ if(c.dataset.word===prevWord) c.classList.remove('used'); });
+    }
+    blank.textContent = word;
+    blank.classList.add('filled');
+    bank.querySelectorAll('.dd-word').forEach(c=>{
+      c.classList.remove('picked');
+      if(c.dataset.word===word) c.classList.add('used');
+    });
+    studentAnswers[qid] = word;
+    updateProgress();
+    updateQnGrid();
+  }
+
+  function showQuestion(idx){
+    currentQuestionIndex = idx;
+    const q = quizData[idx];
+
+    const container = $(ids.container);
+    container.innerHTML = '';
+
+    const block = document.createElement('div');
+    block.className = 'qblock';
+    block.id = ids.container + '-block-' + q.id;
+
+    const typeLabel = {
+      mc:'Pilihan Ganda', checkbox:'Pilihan Ganda Kompleks', short:'Uraian Singkat',
+      match:'Jodohkan', tf:'Benar / Salah', dragdrop:'Seret Kata'
+    }[q.type];
+
+    const head = document.createElement('div');
+    head.className = 'qhead';
+    head.innerHTML = `<span class="qnum">Soal ${idx+1} dari ${quizData.length}</span><span class="qtype">${typeLabel}</span>`;
+    block.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'qbody';
+
+    if(q.type === 'mc'){
+      body.innerHTML = `<div class="qprompt">${q.prompt}</div>`;
+      const opts = document.createElement('div'); opts.className='options';
+      const saved = studentAnswers[q.id];
+      q.options.forEach((opt, i)=>{
+        const div = document.createElement('div');
+        div.className='option';
+        const inputId = ids.container + 'mc' + q.id + '_' + i;
+        div.innerHTML = `<input type="radio" name="${ids.container}mc${q.id}" id="${inputId}"><label for="${inputId}" style="cursor:pointer; flex:1;">${opt}</label>`;
+        if(saved === i){ div.classList.add('selected'); div.querySelector('input').checked = true; }
+        div.addEventListener('click', ()=>{
+          opts.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+          opts.querySelectorAll('input').forEach(inp=>inp.checked=false);
+          div.classList.add('selected');
+          div.querySelector('input').checked = true;
+          studentAnswers[q.id] = i;
+          updateProgress();
+          updateQnGrid();
+        });
+        opts.appendChild(div);
+      });
+      body.appendChild(opts);
+
+    } else if(q.type === 'checkbox'){
+      body.innerHTML = `<div class="qprompt">${q.prompt}</div><div class="checkbox-hint">Centang semua jawaban yang menurutmu benar (bisa lebih dari satu).</div>`;
+      const opts = document.createElement('div'); opts.className='options';
+      studentAnswers[q.id] = studentAnswers[q.id] || [];
+      const savedSet = new Set(studentAnswers[q.id]);
+      q.options.forEach((opt, i)=>{
+        const div = document.createElement('div');
+        div.className='option';
+        const inputId = ids.container + 'cb' + q.id + '_' + i;
+        div.innerHTML = `<input type="checkbox" id="${inputId}"><label for="${inputId}" style="cursor:pointer; flex:1;">${opt}</label>`;
+        if(savedSet.has(i)){ div.classList.add('selected'); div.querySelector('input').checked = true; }
+        div.addEventListener('click', (e)=>{
+          const checkbox = div.querySelector('input');
+          if(e.target.tagName !== 'INPUT'){ checkbox.checked = !checkbox.checked; }
+          div.classList.toggle('selected', checkbox.checked);
+          const set = new Set(studentAnswers[q.id]);
+          if(checkbox.checked) set.add(i); else set.delete(i);
+          studentAnswers[q.id] = Array.from(set);
+          if(studentAnswers[q.id].length === 0) delete studentAnswers[q.id];
+          updateProgress();
+          updateQnGrid();
+        });
+        opts.appendChild(div);
+      });
+      body.appendChild(opts);
+
+    } else if(q.type === 'short'){
+      body.innerHTML = `<div class="qprompt">${q.prompt}</div>`;
+      studentAnswers[q.id] = studentAnswers[q.id] || ['','',''];
+      q.blanks.forEach((b, i)=>{
+        const row = document.createElement('div'); row.className='short-row';
+        row.innerHTML = `<label>${b.label}</label>`;
+        const input = document.createElement('input');
+        input.type='text'; input.placeholder='Jawabanmu…'; input.id = ids.container + 'short' + q.id + '_' + i;
+        input.value = studentAnswers[q.id][i] || '';
+        input.addEventListener('input', ()=>{
+          studentAnswers[q.id][i] = input.value;
+          updateProgress();
+          updateQnGrid();
+        });
+        row.appendChild(input);
+        body.appendChild(row);
+      });
+
+    } else if(q.type === 'match'){
+      body.innerHTML = `<div class="qprompt">${q.prompt}</div>`;
+      studentAnswers[q.id] = studentAnswers[q.id] || new Array(q.left.length).fill('');
+      const shuffledRight = shuffle(q.rightPool);
+      q.left.forEach((leftItem, i)=>{
+        const row = document.createElement('div'); row.className='match-row';
+        const leftDiv = document.createElement('div'); leftDiv.className='match-left'; leftDiv.textContent = leftItem;
+        const select = document.createElement('select');
+        select.id = ids.container + 'match' + q.id + '_' + i;
+        select.innerHTML = `<option value="">-- pilih pasangan --</option>` + shuffledRight.map(r=>`<option value="${r}">${r}</option>`).join('');
+        select.value = studentAnswers[q.id][i] || '';
+        select.addEventListener('change', ()=>{
+          studentAnswers[q.id][i] = select.value;
+          updateProgress();
+          updateQnGrid();
+        });
+        row.appendChild(leftDiv); row.appendChild(select);
+        body.appendChild(row);
+      });
+
+    } else if(q.type === 'tf'){
+      body.innerHTML = `<div class="qprompt">${q.statement}</div>`;
+      const row = document.createElement('div'); row.className='tf-row';
+      const saved = studentAnswers[q.id];
+      ['Benar','Salah'].forEach((label, i)=>{
+        const val = (i===0);
+        const btn = document.createElement('div');
+        btn.className='tf-btn';
+        btn.textContent = label;
+        if(saved === val){ btn.classList.add('selected'); }
+        btn.addEventListener('click', ()=>{
+          row.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('selected'));
+          btn.classList.add('selected');
+          studentAnswers[q.id] = val;
+          updateProgress();
+          updateQnGrid();
+        });
+        row.appendChild(btn);
+      });
+      body.appendChild(row);
+
+    } else if(q.type === 'dragdrop'){
+      studentAnswers[q.id] = studentAnswers[q.id] || '';
+      const sentence = document.createElement('div'); sentence.className='dd-sentence';
+      const blankId = ids.container + 'ddblank' + q.id;
+      sentence.innerHTML = `${q.before} <span class="dd-blank" id="${blankId}" data-qid="${q.id}">___</span> ${q.after}`;
+      body.appendChild(sentence);
+
+      const hint = document.createElement('div'); hint.className='dd-hint';
+      hint.textContent = '🖱️ Seret salah satu kata di bawah ke kolom kosong, atau klik kata lalu klik kolom kosong.';
+      body.appendChild(hint);
+
+      const bank = document.createElement('div'); bank.className='dd-bank';
+      const bankWords = shuffle(q.bank);
+      const savedWord = studentAnswers[q.id];
+      bankWords.forEach(word=>{
+        const chip = document.createElement('div');
+        chip.className='dd-word';
+        chip.textContent = word;
+        chip.draggable = true;
+        chip.dataset.word = word;
+        if(savedWord && word === savedWord){ chip.classList.add('used'); }
+        chip.addEventListener('dragstart', (e)=>{ e.dataTransfer.setData('text/plain', word); });
+        chip.addEventListener('click', ()=>{
+          bank.querySelectorAll('.dd-word').forEach(c=>c.classList.remove('picked'));
+          chip.classList.add('picked');
+        });
+        bank.appendChild(chip);
+      });
+      body.appendChild(bank);
+
+      const blank = sentence.querySelector('.dd-blank');
+      if(savedWord){ blank.textContent = savedWord; blank.classList.add('filled'); }
+      blank.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+      blank.addEventListener('drop', (e)=>{
+        e.preventDefault();
+        const word = e.dataTransfer.getData('text/plain');
+        placeWord(q.id, word, blank, bank);
+      });
+      blank.addEventListener('click', ()=>{
+        const picked = bank.querySelector('.dd-word.picked');
+        if(picked){
+          placeWord(q.id, picked.dataset.word, blank, bank);
+        } else if(blank.classList.contains('filled')){
+          const word = blank.textContent;
+          blank.textContent = '___';
+          blank.classList.remove('filled');
+          studentAnswers[q.id] = '';
+          bank.querySelectorAll('.dd-word').forEach(c=>{ if(c.dataset.word===word) c.classList.remove('used'); });
+          updateProgress();
+          updateQnGrid();
+        }
+      });
+    }
+
+    block.appendChild(body);
+    container.appendChild(block);
+
+    updateProgress();
+    updateNavButtons();
+    updateQnGrid();
+    updateDoubtToggleButton();
+    $(ids.panel).scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function gradeQuiz(){
+    let totalScore = 0;
+    const review = [];
+
+    quizData.forEach((q, idx) => {
+      let fraction = 0;
+      let detail = '';
+
+      if(q.type === 'mc'){
+        const ans = studentAnswers[q.id];
+        fraction = (ans === q.answer) ? 1 : 0;
+        detail = `Jawabanmu: <b>${ans!==undefined ? q.options[ans] : '(kosong)'}</b> — Kunci: <b>${q.options[q.answer]}</b>`;
+
+      } else if(q.type === 'checkbox'){
+        const ans = new Set(studentAnswers[q.id] || []);
+        const correctSet = new Set(q.answer);
+        const isExact = ans.size === correctSet.size && [...ans].every(v=>correctSet.has(v));
+        fraction = isExact ? 1 : 0;
+        const ansLabels = [...ans].map(i=>q.options[i]).join(', ') || '(kosong)';
+        const keyLabels = q.answer.map(i=>q.options[i]).join(', ');
+        detail = `Jawabanmu: <b>${ansLabels}</b> — Kunci: <b>${keyLabels}</b>`;
+
+      } else if(q.type === 'short'){
+        const ansArr = studentAnswers[q.id] || ['','',''];
+        let correctCount = 0;
+        const lines = [];
+        q.blanks.forEach((b, i)=>{
+          const ok = matchAny(ansArr[i], b.accepted);
+          if(ok) correctCount++;
+          lines.push(`${b.label}: <b>${ansArr[i]||'(kosong)'}</b> ${ok?'✓':'✗ (kunci: '+b.accepted[0]+')'}`);
+        });
+        fraction = correctCount / q.blanks.length;
+        detail = lines.join('<br>');
+
+      } else if(q.type === 'match'){
+        const ansArr = studentAnswers[q.id] || [];
+        let correctCount = 0;
+        const lines = [];
+        q.left.forEach((leftItem, i)=>{
+          const ok = ansArr[i] === q.answer[i];
+          if(ok) correctCount++;
+          lines.push(`${leftItem} → <b>${ansArr[i]||'(kosong)'}</b> ${ok?'✓':'✗ (kunci: '+q.answer[i]+')'}`);
+        });
+        fraction = correctCount / q.left.length;
+        detail = lines.join('<br>');
+
+      } else if(q.type === 'tf'){
+        const ans = studentAnswers[q.id];
+        fraction = (ans === q.answer) ? 1 : 0;
+        detail = `Jawabanmu: <b>${ans===undefined?'(kosong)':(ans?'Benar':'Salah')}</b> — Kunci: <b>${q.answer?'Benar':'Salah'}</b>`;
+
+      } else if(q.type === 'dragdrop'){
+        const ans = studentAnswers[q.id] || '';
+        fraction = (norm(ans) === norm(q.answer)) ? 1 : 0;
+        detail = `Jawabanmu: <b>${ans||'(kosong)'}</b> — Kunci: <b>${q.answer}</b>`;
+      }
+
+      totalScore += fraction;
+      review.push({ num: idx+1, type:q.type, fraction, detail, prompt: q.prompt || q.statement || `${q.before} ___ ${q.after}`, topic: q.topic || null });
+    });
+
+    return { totalScore, review };
+  }
+
+  function computeTopicStats(review){
+    const map = {};
+    const order = [];
+    review.forEach(r=>{
+      if(!r.topic) return;
+      if(!map[r.topic]){ map[r.topic] = { score:0, total:0 }; order.push(r.topic); }
+      map[r.topic].total += 1;
+      map[r.topic].score += r.fraction;
+    });
+    return order.map(topic => {
+      const s = map[topic];
+      const pct = Math.round((s.score / s.total) * 100);
+      return { topic, score: Math.round(s.score*10)/10, total: s.total, pct, tuntas: s.score >= s.total };
+    });
+  }
+
+  function renderTopicStats(topicStats){
+    const box = ids.topicStatsBox ? $(ids.topicStatsBox) : null;
+    if(!box) return;
+    if(!topicStats.length){ box.innerHTML = ''; return; }
+    const rows = topicStats.map(t => `
+      <tr>
+        <td>${t.topic}</td>
+        <td style="text-align:center;">${t.score} / ${t.total}</td>
+        <td style="text-align:center;">${t.pct}%</td>
+        <td>${t.tuntas
+          ? '<span style="color:var(--correct); font-weight:600;">✅ Tuntas — seluruh soal terjawab benar</span>'
+          : '<span style="color:var(--wrong); font-weight:600;">⚠️ Perlu diulang — belum seluruhnya benar</span>'}</td>
+      </tr>`).join('');
+    box.innerHTML = `
+      <table>
+        <caption>Rekap skor per bagian/tab materi</caption>
+        <thead><tr><th>Topik (Tab)</th><th>Skor</th><th>Persentase</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="note">💡 Bagian dengan status <strong>⚠️ Perlu diulang</strong> menandakan masih ada soal dari topik tersebut yang belum terjawab benar sepenuhnya. Buka kembali tab materi terkait untuk mempelajarinya, lalu coba latihan atau evaluasi ulang.</div>`;
+  }
+
+  function bindEvents(){
+    $(ids.doubtToggleBtn).addEventListener('click', ()=>{
+      const q = quizData[currentQuestionIndex];
+      if(doubtfulAnswers.has(q.id)) doubtfulAnswers.delete(q.id); else doubtfulAnswers.add(q.id);
+      updateDoubtToggleButton();
+      updateQnGrid();
+    });
+
+    $(ids.prevBtn).addEventListener('click', ()=>{
+      if(currentQuestionIndex > 0) showQuestion(currentQuestionIndex - 1);
+    });
+    $(ids.nextBtn).addEventListener('click', ()=>{
+      if(currentQuestionIndex < quizData.length - 1){
+        showQuestion(currentQuestionIndex + 1);
+      } else {
+        $(ids.submitBtn).scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    });
+
+    $(ids.submitBtn).addEventListener('click', ()=>{
+      quizSubmitted = true;
+      stopTimerVisual();
+
+      const { totalScore, review } = gradeQuiz();
+      const pct = Math.round((totalScore/quizData.length)*100);
+
+      $(ids.scoreDisplay).innerHTML = `${Math.round(totalScore*10)/10}<span> / ${quizData.length}</span>`;
+      const msgEl = $(ids.scoreMessage);
+      msgEl.textContent = pct===100 ? 'Sempurna! Kamu sangat memahami besaran, satuan, dan alat ukur.' :
+        pct>=75 ? 'Bagus sekali! Tinjau kembali soal yang belum tepat.' :
+        pct>=50 ? 'Cukup baik. Pelajari lagi bagian yang masih keliru di menu Materi.' :
+        'Yuk pelajari kembali menu Materi, lalu coba kerjakan ulang.';
+
+      const reviewList = $(ids.reviewList);
+      reviewList.innerHTML = '';
+      review.forEach(r=>{
+        const div = document.createElement('div');
+        div.className = 'review-item ' + (r.fraction===1?'ok':(r.fraction===0?'bad':'partial'));
+        const qObj = quizData[r.num-1];
+        const doubtFlag = (qObj && doubtfulAnswers.has(qObj.id)) ? ' <span title="Ditandai ragu-ragu saat mengerjakan">🚩</span>' : '';
+        const topicTag = r.topic ? `<span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--brass-dark); background:var(--brass-light); padding:2px 7px; border-radius:2px; margin-left:8px;">${r.topic}</span>` : '';
+        div.innerHTML = `<div class="rtitle">Soal ${r.num} — ${Math.round(r.fraction*100)}%${topicTag}${doubtFlag}</div><div>${r.prompt}</div><div style="margin-top:6px; color:var(--ink-soft);">${r.detail}</div>`;
+        reviewList.appendChild(div);
+      });
+
+      const topicStats = computeTopicStats(review);
+      renderTopicStats(topicStats);
+
+      $(ids.resultBox).style.display = 'block';
+      $(ids.resultBox).scrollIntoView({behavior:'smooth'});
+      lastResult = { totalScore, review, pct, topicStats };
+    });
+
+    $(ids.sendSheetBtn).addEventListener('click', ()=>{
+      if(!lastResult) return;
+      const statusEl = $(ids.sendStatus);
+      const sendBtn = $(ids.sendSheetBtn);
+
+      if(!SHEET_WEBHOOK_URL || SHEET_WEBHOOK_URL.indexOf('GANTI_DENGAN') === 0){
+        statusEl.textContent = '⚠️ Guru belum mengatur URL rekap spreadsheet pada file ini. Gunakan tombol unduh sebagai gantinya.';
+        statusEl.style.color = 'var(--wrong)';
+        return;
+      }
+
+      const { totalScore, review, pct, topicStats } = lastResult;
+      const detailSummary = review.map(r => `Soal${r.num}:${Math.round(r.fraction*100)}%`).join(' | ');
+      const topikBelumTuntas = (topicStats||[]).filter(t=>!t.tuntas).map(t=>`${t.topic} (${t.score}/${t.total})`).join(' | ') || '-';
+
+      const payload = {
+        waktu: new Date().toLocaleString('id-ID'),
+        nama: studentName,
+        kelas: studentClass,
+        skor: Math.round(totalScore*10)/10,
+        total: review.length,
+        persen: pct,
+        detail: detailSummary,
+        topikBelumTuntas: topikBelumTuntas,
+        sheetTarget: cfg.sheetTarget   // <-- penentu tab/sheet tujuan di spreadsheet guru
+      };
+
+      sendBtn.disabled = true;
+      statusEl.textContent = 'Mengirim ke spreadsheet guru…';
+      statusEl.style.color = 'var(--ink-soft)';
+
+      fetch(SHEET_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      }).then(()=>{
+        statusEl.textContent = `✅ Nilai berhasil dikirim ke rekap guru (sheet "${cfg.sheetTarget}"). Kamu tetap bisa unduh salinan sebagai cadangan.`;
+        statusEl.style.color = 'var(--correct)';
+        sendBtn.textContent = '✓ Terkirim';
+      }).catch(()=>{
+        statusEl.textContent = '⚠️ Gagal mengirim (cek koneksi internet). Silakan unduh salinan dan kirim manual ke guru.';
+        statusEl.style.color = 'var(--wrong)';
+        sendBtn.disabled = false;
+      });
+    });
+
+    $(ids.downloadBtn).addEventListener('click', ()=>{
+      if(!lastResult) return;
+      const { totalScore, review, pct, topicStats } = lastResult;
+      const now = new Date();
+      const tanggal = now.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+      const jam = now.toLocaleTimeString('id-ID');
+
+      const rows = review.map(r => `
+        <tr>
+          <td style="padding:8px;border:1px solid #ccc;">${r.num}</td>
+          <td style="padding:8px;border:1px solid #ccc;">${r.prompt}</td>
+          <td style="padding:8px;border:1px solid #ccc;">${r.detail}</td>
+          <td style="padding:8px;border:1px solid #ccc;text-align:center;">${Math.round(r.fraction*100)}%</td>
+        </tr>`).join('');
+
+      const topicRows = (topicStats||[]).map(t => `
+        <tr>
+          <td style="padding:8px;border:1px solid #ccc;">${t.topic}</td>
+          <td style="padding:8px;border:1px solid #ccc;text-align:center;">${t.score} / ${t.total}</td>
+          <td style="padding:8px;border:1px solid #ccc;text-align:center;">${t.pct}%</td>
+          <td style="padding:8px;border:1px solid #ccc;">${t.tuntas ? '✅ Tuntas' : '⚠️ Perlu diulang'}</td>
+        </tr>`).join('');
+
+      const topicSection = (topicStats && topicStats.length) ? `
+        <h2 style="font-size:16px; margin-top:28px; border-bottom:2px solid #A8763E; padding-bottom:6px;">Statistik per Topik</h2>
+        <table>
+          <thead><tr><th>Topik (Tab)</th><th>Skor</th><th>Persentase</th><th>Status</th></tr></thead>
+          <tbody>${topicRows}</tbody>
+        </table>` : '';
+
+      const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+      <title>${cfg.fileTitle} - ${studentName}</title>
+      <style>
+        body{font-family:Arial,sans-serif; color:#1C2B39; padding:30px; max-width:900px; margin:0 auto;}
+        h1{font-size:20px; border-bottom:3px solid #A8763E; padding-bottom:10px;}
+        .meta{margin:16px 0 24px; font-size:14px;}
+        .meta b{display:inline-block; width:140px;}
+        .score-box{text-align:center; background:#F3F4EE; padding:20px; margin-bottom:24px; border:1px solid #DADCCB;}
+        .score-box .big{font-size:36px; font-weight:bold; color:#7E5A2C;}
+        table{width:100%; border-collapse:collapse; font-size:13px; margin-bottom:10px;}
+        th{background:#1C2B39; color:#fff; padding:8px; text-align:left;}
+      </style></head>
+      <body>
+        <h1>${cfg.fileTitle}</h1>
+        <div class="meta">
+          <div><b>Nama</b>: ${studentName}</div>
+          <div><b>Kelas</b>: ${studentClass}</div>
+          <div><b>Tanggal</b>: ${tanggal}, ${jam}</div>
+        </div>
+        <div class="score-box">
+          <div class="big">${Math.round(totalScore*10)/10} / ${review.length}</div>
+          <div>Skor: ${pct}%</div>
+        </div>
+        ${topicSection}
+        <h2 style="font-size:16px; margin-top:20px; border-bottom:2px solid #A8763E; padding-bottom:6px;">Rincian Jawaban</h2>
+        <table>
+          <thead><tr><th>No</th><th>Soal</th><th>Jawaban &amp; Kunci</th><th>Hasil</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p style="margin-top:24px; font-size:12px; color:#3E5266;">Dokumen ini dibuat otomatis oleh LKPD Digital dan dapat diserahkan kepada guru sebagai bukti pengerjaan.</p>
+      </body></html>`;
+
+      const blob = new Blob([html], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeName = studentName.replace(/[^a-z0-9]+/gi,'_');
+      const safeClass = studentClass.replace(/[^a-z0-9]+/gi,'_');
+      a.href = url;
+      a.download = `${cfg.fileNamePrefix}_${safeName}_${safeClass}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  bindEvents();
+
+  return {
+    init(){
+      buildQnGrid();
+      showQuestion(0);
+      startTimer();
+    }
+  };
+}
+
+const latihanEngine = createQuizEngine({
+  quiz: quiz,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan',
+  fileTitle: 'Hasil Pengerjaan LKPD — Besaran Pokok, Turunan &amp; Satuan (Latihan)',
+  fileNamePrefix: 'Hasil_Latihan_Besaran_Satuan',
+  ids: {
+    panel: 'panel-latihan',
+    container: 'quizContainer',
+    qnGrid: 'qnGrid',
+    progressText: 'progressText',
+    doubtToggleBtn: 'doubtToggleBtn',
+    prevBtn: 'prevBtn',
+    nextBtn: 'nextBtn',
+    submitBtn: 'submitBtn',
+    timerBox: 'timerBox',
+    timerValue: 'timerValue',
+    resultBox: 'resultBox',
+    scoreDisplay: 'scoreDisplay',
+    scoreMessage: 'scoreMessage',
+    reviewList: 'reviewList',
+    sendSheetBtn: 'sendSheetBtn',
+    downloadBtn: 'downloadBtn',
+    sendStatus: 'sendStatus'
+  }
+});
+
+const latihan2Engine = createQuizEngine({
+  quiz: quiz3,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan2',
+  fileTitle: 'Hasil Pengerjaan LKPD — Konversi Satuan (Latihan 2)',
+  fileNamePrefix: 'Hasil_Latihan2_Konversi_Satuan',
+  ids: {
+    panel: 'panel-latihan2',
+    container: 'quizContainer2',
+    qnGrid: 'qnGrid2',
+    progressText: 'progressText2',
+    doubtToggleBtn: 'doubtToggleBtn2',
+    prevBtn: 'prevBtn2',
+    nextBtn: 'nextBtn2',
+    submitBtn: 'submitBtn2',
+    timerBox: 'timerBox2',
+    timerValue: 'timerValue2',
+    resultBox: 'resultBox2',
+    scoreDisplay: 'scoreDisplay2',
+    scoreMessage: 'scoreMessage2',
+    reviewList: 'reviewList2',
+    sendSheetBtn: 'sendSheetBtn2',
+    downloadBtn: 'downloadBtn2',
+    sendStatus: 'sendStatus2'
+  }
+});
+
+const latihan3Engine = createQuizEngine({
+  quiz: quizNotasi,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan3',
+  fileTitle: 'Hasil Pengerjaan LKPD — Notasi Ilmiah (Latihan 3)',
+  fileNamePrefix: 'Hasil_Latihan3_Notasi_Ilmiah',
+  ids: {
+    panel: 'panel-latihan3',
+    container: 'quizContainer3',
+    qnGrid: 'qnGrid3',
+    progressText: 'progressText3',
+    doubtToggleBtn: 'doubtToggleBtn3',
+    prevBtn: 'prevBtn3',
+    nextBtn: 'nextBtn3',
+    submitBtn: 'submitBtn3',
+    timerBox: 'timerBox3',
+    timerValue: 'timerValue3',
+    resultBox: 'resultBox3',
+    scoreDisplay: 'scoreDisplay3',
+    scoreMessage: 'scoreMessage3',
+    reviewList: 'reviewList3',
+    sendSheetBtn: 'sendSheetBtn3',
+    downloadBtn: 'downloadBtn3',
+    sendStatus: 'sendStatus3'
+  }
+});
+
+const latihan4Engine = createQuizEngine({
+  quiz: quiz4,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan4',
+  fileTitle: 'Hasil Pengerjaan LKPD — Angka Penting (Latihan 4)',
+  fileNamePrefix: 'Hasil_Latihan4_Angka_Penting',
+  ids: {
+    panel: 'panel-latihan4',
+    container: 'quizContainer4',
+    qnGrid: 'qnGrid4',
+    progressText: 'progressText4',
+    doubtToggleBtn: 'doubtToggleBtn4',
+    prevBtn: 'prevBtn4',
+    nextBtn: 'nextBtn4',
+    submitBtn: 'submitBtn4',
+    timerBox: 'timerBox4',
+    timerValue: 'timerValue4',
+    resultBox: 'resultBox4',
+    scoreDisplay: 'scoreDisplay4',
+    scoreMessage: 'scoreMessage4',
+    reviewList: 'reviewList4',
+    sendSheetBtn: 'sendSheetBtn4',
+    downloadBtn: 'downloadBtn4',
+    sendStatus: 'sendStatus4'
+  }
+});
+
+bindQuizStart({
+  nameInput: 'latihanName',
+  classInput: 'latihanClass',
+  errorBox: 'latihanLoginError',
+  startBtn: 'startLatihanBtn',
+  startCard: 'quizStartCard',
+  quizArea: 'quizArea'
+}, latihanEngine);
+
+bindQuizStart({
+  nameInput: 'latihanName2',
+  classInput: 'latihanClass2',
+  errorBox: 'latihanLoginError2',
+  startBtn: 'startLatihanBtn2',
+  startCard: 'quizStartCard2',
+  quizArea: 'quizArea2'
+}, latihan2Engine);
+
+bindQuizStart({
+  nameInput: 'latihanName3',
+  classInput: 'latihanClass3',
+  errorBox: 'latihanLoginError3',
+  startBtn: 'startLatihanBtn3',
+  startCard: 'quizStartCard3',
+  quizArea: 'quizArea3'
+}, latihan3Engine);
+
+const latihan5Engine = createQuizEngine({
+  quiz: quiz5,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan5',
+  fileTitle: 'Hasil Pengerjaan LKPD — Jangka Sorong (Latihan 5)',
+  fileNamePrefix: 'Hasil_Latihan5_Jangka_Sorong',
+  ids: {
+    panel: 'panel-latihan5',
+    container: 'quizContainer5',
+    qnGrid: 'qnGrid5',
+    progressText: 'progressText5',
+    doubtToggleBtn: 'doubtToggleBtn5',
+    prevBtn: 'prevBtn5',
+    nextBtn: 'nextBtn5',
+    submitBtn: 'submitBtn5',
+    timerBox: 'timerBox5',
+    timerValue: 'timerValue5',
+    resultBox: 'resultBox5',
+    scoreDisplay: 'scoreDisplay5',
+    scoreMessage: 'scoreMessage5',
+    reviewList: 'reviewList5',
+    sendSheetBtn: 'sendSheetBtn5',
+    downloadBtn: 'downloadBtn5',
+    sendStatus: 'sendStatus5'
+  }
+});
+
+const latihan6Engine = createQuizEngine({
+  quiz: quiz6,
+  durationSeconds: 60 * 60,
+  sheetTarget: 'Latihan6',
+  fileTitle: 'Hasil Pengerjaan LKPD — Mikrometer Sekrup (Latihan 6)',
+  fileNamePrefix: 'Hasil_Latihan6_Mikrometer_Sekrup',
+  ids: {
+    panel: 'panel-latihan6',
+    container: 'quizContainer6',
+    qnGrid: 'qnGrid6',
+    progressText: 'progressText6',
+    doubtToggleBtn: 'doubtToggleBtn6',
+    prevBtn: 'prevBtn6',
+    nextBtn: 'nextBtn6',
+    submitBtn: 'submitBtn6',
+    timerBox: 'timerBox6',
+    timerValue: 'timerValue6',
+    resultBox: 'resultBox6',
+    scoreDisplay: 'scoreDisplay6',
+    scoreMessage: 'scoreMessage6',
+    reviewList: 'reviewList6',
+    sendSheetBtn: 'sendSheetBtn6',
+    downloadBtn: 'downloadBtn6',
+    sendStatus: 'sendStatus6'
+  }
+});
+
+const latihan7Engine = createQuizEngine({
+  quiz: quiz7,
+  durationSeconds: 90 * 60,
+  sheetTarget: 'Evaluasi',
+  fileTitle: 'Hasil Pengerjaan LKPD — Evaluasi Akhir (30 Soal)',
+  fileNamePrefix: 'Hasil_Evaluasi_Akhir',
+  ids: {
+    panel: 'panel-evaluasi',
+    container: 'quizContainer7',
+    qnGrid: 'qnGrid7',
+    progressText: 'progressText7',
+    doubtToggleBtn: 'doubtToggleBtn7',
+    prevBtn: 'prevBtn7',
+    nextBtn: 'nextBtn7',
+    submitBtn: 'submitBtn7',
+    timerBox: 'timerBox7',
+    timerValue: 'timerValue7',
+    resultBox: 'resultBox7',
+    scoreDisplay: 'scoreDisplay7',
+    scoreMessage: 'scoreMessage7',
+    reviewList: 'reviewList7',
+    topicStatsBox: 'topicStatsBox7',
+    sendSheetBtn: 'sendSheetBtn7',
+    downloadBtn: 'downloadBtn7',
+    sendStatus: 'sendStatus7'
+  }
+});
+
+bindQuizStart({
+  nameInput: 'latihanName4',
+  classInput: 'latihanClass4',
+  errorBox: 'latihanLoginError4',
+  startBtn: 'startLatihanBtn4',
+  startCard: 'quizStartCard4',
+  quizArea: 'quizArea4'
+}, latihan4Engine);
+
+bindQuizStart({
+  nameInput: 'latihanName5',
+  classInput: 'latihanClass5',
+  errorBox: 'latihanLoginError5',
+  startBtn: 'startLatihanBtn5',
+  startCard: 'quizStartCard5',
+  quizArea: 'quizArea5'
+}, latihan5Engine);
+
+bindQuizStart({
+  nameInput: 'latihanName6',
+  classInput: 'latihanClass6',
+  errorBox: 'latihanLoginError6',
+  startBtn: 'startLatihanBtn6',
+  startCard: 'quizStartCard6',
+  quizArea: 'quizArea6'
+}, latihan6Engine);
+
+bindQuizStart({
+  nameInput: 'latihanName7',
+  classInput: 'latihanClass7',
+  errorBox: 'latihanLoginError7',
+  startBtn: 'startLatihanBtn7',
+  startCard: 'quizStartCard7',
+  quizArea: 'quizArea7'
+}, latihan7Engine);
+
+initConverter();
+initNotasiConverter();
+initAPConverter();
+initJSConverter();
+initMKConverter();
+
+</script>
+</body>
+</html>
