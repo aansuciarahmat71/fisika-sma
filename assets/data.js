@@ -35,7 +35,13 @@ const topics = [
     file: "materi/AanS_Game_misteri-dunia-kuantum.html",
     desc: "Yuk berpetualang di dunia Kuantum dengan beragam tantangan"
   },
-
+  {
+    title: "Simulasi Gaya Listrik dan Medan Listrik",
+    category: "lab-maya",
+    kelas: "XII",
+    file: "materi/AanS_lab_maya_listrik_statis.html",
+    desc: "Yuk lakukan simulasi untuk memahami gaya listrik dan medan listrik"
+  },
   {
     title: "Pengukuran",
     category: "mekanika",
