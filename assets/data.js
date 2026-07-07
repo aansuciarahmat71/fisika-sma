@@ -10,7 +10,7 @@
  *    otomatis muncul, tidak perlu mengubah index.html sama sekali.
  *
  * Kategori yang tersedia (harus salah satu dari ini, huruf kecil semua):
- *   "mekanika", "gelombang", "listrik-magnet", "termodinamika", "fisika-modern", "lab-maya"
+ *   "mekanika", "gelombang", "listrik-magnet", "termodinamika", "fisika-modern", "lab-maya",
  *
  * Field:
  *   title    -> judul materi, tampil di kartu
