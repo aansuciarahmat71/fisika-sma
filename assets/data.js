@@ -10,9 +10,8 @@
  *    otomatis muncul, tidak perlu mengubah index.html sama sekali.
  *
  * Kategori yang tersedia (harus salah satu dari ini, huruf kecil semua):
- *   "mekanika", "gelombang", "listrik-magnet", "termodinamika", "fisika-modern", "labmaya",
- *
- * Field:
+ *   "mekanika", "gelombang", "listrik-magnet", "termodinamika", "fisika-modern",
+  * Field:
  *   title    -> judul materi, tampil di kartu
  *   category -> salah satu kategori di atas
  *   kelas     -> "X", "XI", atau "XII" (boleh diisi bebas juga, mis. "X-XII")
@@ -37,7 +36,7 @@ const topics = [
   },
   {
     title: "Simulasi Gaya Listrik dan Medan Listrik",
-    category: "labmaya",
+    category: "listrik-magnet",
     kelas: "XII",
     file: "materi/AanS_lab_maya_listrik_statis.html",
     desc: "Yuk lakukan simulasi untuk memahami gaya listrik dan medan listrik"
@@ -66,5 +65,4 @@ const categories = [
   { key: "listrik-magnet", label: "Listrik & Magnet" },
   { key: "termodinamika", label: "Termodinamika" },
   { key: "fisika-modern", label: "Fisika Modern" },
-  { key: "labmaya", label: "Lab Maya" },
 ];
